@@ -22,12 +22,9 @@ it flash (only if Cocoa?)
 
 - Does -X work at all?  What does it return if it fails?
 
-- Create blank document ˆ la my existing BBEdit alias?  Use
-template/stationery?
-
-- Allow piping (like BBEdit, again?)
-
 - Launching as root: use authentication framework - doesn't work.
+
+- launch URL with specified URL handler (done, except for IC)
 
 - launch apps by IC protocol handler (esp. editor)
 
@@ -45,6 +42,7 @@ Thanks to:
 #define kComponentSignatureString "launch"
 
 #include <unistd.h>
+#include <sys/stat.h>
 #include <Carbon/Carbon.h>
 #include <CoreServices/CoreServices.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -57,7 +55,7 @@ Thanks to:
 
 const char *APP_NAME;
 
-#define VERSION "1.0a9"
+#define VERSION "1.0b1"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -77,6 +75,8 @@ struct {
 #define DEFAULT_LAUNCH_FLAGS (kLSLaunchNoParams | kLSLaunchStartClassic | kLSLaunchAsync)
 
 LSLaunchURLSpec LSPEC = {NULL, NULL, NULL, DEFAULT_LAUNCH_FLAGS, NULL};
+
+char *TEMPFILE = NULL;
 
 typedef struct {
     OSStatus status;
@@ -106,7 +106,7 @@ static errList ERRS = {
 };
 
 void usage() {
-    fprintf(stderr, "usage: %s [-npswbmhCX] [-c creator] [-i bundleID] [-u URL] [-a name] [document ...]\n"
+    fprintf(stderr, "usage: %s [-npswbmhCX] [-c creator] [-i bundleID] [-u URL] [-a name] [item ...] [-]\n"
                     "   or: %s [-npflswbmhCX] item ...\n", APP_NAME, APP_NAME);
     fprintf(stderr,
         "  -n            print matching paths/URLs instead of opening them\n"
@@ -139,7 +139,7 @@ void usage() {
 char *osstatusstr(OSStatus err) {
     errRec *rec;
     const char *errDesc = "unknown error";
-    const char *failedStr = "(unable to retrieve error message)";
+    char * const failedStr = "(unable to retrieve error message)";
     static char *str = NULL;
     size_t len;
     if (str != NULL && str != failedStr) free(str);
@@ -151,7 +151,7 @@ char *osstatusstr(OSStatus err) {
     len = strlen(errDesc) + 10 * sizeof(char);
     str = (char *)malloc(len);
     if (str != NULL)
-        snprintf(str, len, "%s (%d)", errDesc, (long)err);
+        snprintf(str, len, "%s (%ld)", errDesc, err);
     else
         str = failedStr;
     return str;
@@ -241,7 +241,100 @@ void authenticate(AuthorizationItem item, AuthorizationRef authorizationRef) {
 }
 #endif
 
-void getargs(int argc, const char *argv[]) {
+CFURLRef normalizedURLFromString(CFStringRef str) {
+    CFURLRef url = CFURLCreateWithString(NULL, str, NULL);
+    if (url != NULL) {
+        CFURLRef absURL = CFURLCopyAbsoluteURL(url);
+        CFRelease(url);
+        url = NULL;
+        if (absURL != NULL) {
+            CFStringRef scheme = CFURLCopyScheme(absURL);
+            url = absURL;
+            if (scheme == NULL) {
+                CFRelease(url);
+                url = NULL;
+            }
+        }
+    }
+    return url;
+}
+
+CFURLRef normalizedURLFromPrefixSlack(CFStringRef prefix, CFStringRef slackStr) {
+    CFStringRef str = CFStringCreateWithFormat(NULL, NULL, CFSTR("%@%@"),
+                                               prefix, slackStr);
+    CFURLRef normalizedURL = normalizedURLFromString(str);
+    CFRelease(str);
+    return normalizedURL;
+}
+
+char *tempFile(int *fd) {
+    char *tmpDir = getenv("TMPDIR");
+    const char * const tempTemplate = "/launch-stationery-XXXXXXXX";
+    char *tempPath;
+    OSStatus err;
+    FSRef fsr;
+    FSCatalogInfo catalogInfo;
+    FileInfo *fInfo;
+
+    // create temporary file
+    if (tmpDir == NULL) tmpDir = "/tmp";
+    tempPath = (char *)malloc(strlen(tmpDir) + strlen(tempTemplate) + 1);
+    if (tempPath == NULL) errexit("can't allocate memory");
+    strcpy(tempPath, tmpDir);
+    strcat(tempPath, tempTemplate);
+    if ( (*fd = mkstemp(tempPath)) == -1)
+        errexit("can't create temporary file '%s'", tempPath);
+    // mark file as stationery
+    err = FSPathMakeRef(tempPath, &fsr, NULL);
+    if (err != noErr) osstatusexit(err, "can't find '%s'", tempPath);
+    err = FSGetCatalogInfo(&fsr, kFSCatInfoFinderInfo, &catalogInfo, NULL, NULL, NULL);
+    if (err != noErr) osstatusexit(err, "can't get information for '%s'", tempPath);
+    fInfo = (FileInfo *)&(catalogInfo.finderInfo);
+    fInfo->finderFlags |= kIsStationery;
+    err = FSSetCatalogInfo(&fsr, kFSCatInfoFinderInfo, &catalogInfo);
+    if (err != noErr) osstatusexit(err, "can't set information for '%s'", tempPath);
+    
+    return tempPath;
+}
+
+char *stdinAsTempFile() {
+    unsigned char *buf;
+    int bufsize;
+    // Actual number of characters read, and therefore written.
+    ssize_t charCount;
+    int fd;
+    struct stat stat_buf;
+    char *tempFilePath;
+
+    tempFilePath = tempFile(&fd);
+
+    if (fstat(fd, &stat_buf) == -1)
+        errexit("can't fstat temporary file '%s'", tempFilePath);
+
+    bufsize = stat_buf.st_blksize;
+    if ( (buf = (unsigned char *)malloc(bufsize * sizeof(unsigned char))) == NULL)
+        errexit("can't allocate %ld bytes of buffer memory",
+                bufsize * sizeof(unsigned char));
+
+    // Loop until the end of the file.
+    while (1) {
+        // Read a block of input.
+        charCount = read(STDIN_FILENO, buf, bufsize);
+        if (charCount < 0) {
+            errexit("can't read from standard input");
+        }
+        // End of this file?
+        if (charCount == 0)
+            break;
+        // Write this block out.
+        if (write(fd, buf, charCount) != charCount)
+            errexit("error writing to file '%s'", tempFilePath);
+    }
+    free(buf);
+    return tempFilePath;
+}
+
+void getargs(int argc, char * const argv[]) {
     extern char *optarg;
     extern int optind;
     int ch;
@@ -310,8 +403,10 @@ void getargs(int argc, const char *argv[]) {
 	    appSpecified = true;
             break;
 	case 'u':
-	    LSPEC.appURL = CFURLCreateWithString(NULL,
-		CFStringCreateWithCString(NULL, optarg, CFStringGetSystemEncoding()), NULL);
+            { CFStringRef str = CFStringCreateWithCString(NULL, optarg, CFStringGetSystemEncoding());
+	      LSPEC.appURL = CFURLCreateWithString(NULL, str, NULL);
+              if (str != NULL) CFRelease(str);
+            }
 	    if (LSPEC.appURL == NULL) {
 		errexit("invalid URL (argument of -u)");
 	    } else {
@@ -353,7 +448,7 @@ void getargs(int argc, const char *argv[]) {
     }
 
     if (OPTS.action == ACTION_LAUNCH_URLS && appSpecified)
-	errexit("sorry, launching URLs with a given application is not yet supported"); // XXX
+        errexit("launching URLs with a given application is not supported; try without -l");
 
     if (OPTS.action == ACTION_INFO_ITEMS && appSpecified)
 	errexit("can't get information (-f) on item(s) using an application (-u, -c, -i, -a)");
@@ -364,7 +459,7 @@ void getargs(int argc, const char *argv[]) {
     if (argc != 0) {
         int i;
         OSStatus err;
-        CFStringRef pathstr;
+        CFStringRef argStr;
         CFURLRef itemURL;
         LSItemInfoRecord docInfo;
 
@@ -374,32 +469,33 @@ void getargs(int argc, const char *argv[]) {
         // handle document/item/URL arguments
         LSPEC.itemURLs = CFArrayCreateMutable(NULL, argc, NULL);
         for (i = 0 ; i < argc ; i++) {
-            pathstr = CFStringCreateWithCString(NULL, argv[i], CFStringGetSystemEncoding());
-            itemURL = NULL;
-            if (OPTS.action == ACTION_FIND_ITEMS || OPTS.action == ACTION_OPEN_ITEMS ||
-                OPTS.action == ACTION_LAUNCH_URLS || OPTS.action == ACTION_INFO_ITEMS) { // check for URLs
-                itemURL = CFURLCreateWithString(NULL, pathstr, NULL);
-                if (itemURL != NULL) {
-                    CFURLRef absURL = CFURLCopyAbsoluteURL(itemURL);
-                    CFRelease(itemURL);
-                    itemURL = NULL;
-                    if (absURL != NULL) {
-                        CFStringRef scheme = CFURLCopyScheme(absURL);
-                        itemURL = absURL;
-                        if (scheme == NULL) {
-                            CFRelease(itemURL);
-                            itemURL = NULL;
-                        }
-                    }
+            argStr = NULL;
+            if (strcmp(argv[i], "-") == 0) {
+                TEMPFILE = stdinAsTempFile();
+                itemURL = CFURLCreateFromFileSystemRepresentation(NULL, TEMPFILE, strlen(TEMPFILE), false);
+                LSPEC.launchFlags ^= kLSLaunchAsync;
+            } else {
+                argStr = CFStringCreateWithCString(NULL, argv[i], CFStringGetSystemEncoding());
+                // check for URLs
+                itemURL = normalizedURLFromString(argStr);
+                if (itemURL == NULL && OPTS.action == ACTION_LAUNCH_URLS) {
+                    // check for email addresses
+                    if (strchr(argv[i], '@') != NULL && strchr(argv[i], '/') == NULL)
+                        itemURL = normalizedURLFromPrefixSlack(CFSTR("mailto:"), argStr);
+                    // check for "slack" URLs
+                    if (itemURL == NULL && strchr(argv[i], '.') != NULL && strchr(argv[i], '/') != argv[i])
+                        itemURL = normalizedURLFromPrefixSlack(CFSTR("http://"), argStr);
+                }
+                if (itemURL == NULL) {
+                    // check for file paths
+                    itemURL = CFURLCreateWithFileSystemPath(NULL, argStr, kCFURLPOSIXPathStyle, false);
+                    err = LSCopyItemInfoForURL(itemURL, kLSRequestExtensionFlagsOnly, &docInfo);
+                    if (err != noErr) osstatusexit(err, "unable to locate '%s'", argv[i]);
                 }
             }
-            if (itemURL == NULL) {
-                itemURL = CFURLCreateWithFileSystemPath(NULL, pathstr, kCFURLPOSIXPathStyle, false);
-                err = LSCopyItemInfoForURL(itemURL, kLSRequestExtensionFlagsOnly, &docInfo);
-                if (err != noErr) osstatusexit(err, "unable to locate '%s'", argv[i]);
-            }
             CFArrayAppendValue((CFMutableArrayRef)LSPEC.itemURLs, itemURL);
-            CFRelease(pathstr);
+            // don't CFRelease the itemURL because CFArray doesn't retain it by default
+            if (argStr != NULL) CFRelease(argStr);
         }
     }
 }
@@ -615,7 +711,7 @@ void launchURL(CFURLRef url, ICInstance icInst) {
     CFRelease(urlStr);
 }
 
-int main (int argc, const char *argv[]) {
+int main (int argc, char * const argv[]) {
     OSStatus err;
     
     APP_NAME = argv[0];
@@ -667,6 +763,13 @@ int main (int argc, const char *argv[]) {
         ICStop(icInst);
         break;
     }
+    }
+
+    if (TEMPFILE != NULL) {
+        // the application may take a while to finish opening the temporary file
+        daemon(0, 0);
+        sleep(60);
+        unlink(TEMPFILE);
     }
 
     return 0;

@@ -1,4 +1,4 @@
-launch 1.0a9 [2 April 2002]
+launch 1.0b1 [14 December 2002]
 ============
 
 A command-line launcher for Mac OS X in the spirit of open(1).
@@ -12,7 +12,7 @@ WHAT IS IT?
 Apple provides a simple command-line launching program called 'open'
 with Mac OS X.  It offers few options - launching applications by name
 or by path, launching TextEdit, or opening a number of applications,
-documents, folders, etc.  With the exception of special support for
+documents, folders, or URLs.  With the exception of special support for
 TextEdit, 'launch' does all this and:
 
 - opens URLs, directly or in your preferred helper application (-l)
@@ -22,6 +22,7 @@ TextEdit, 'launch' does all this and:
   changing references to it
 - asks applications to print documents, something the OS X Finder
   no longer permits
+- allows you to pipe output to GUI applictions
 - launches applications in the background
 - launches Carbon applications in Classic
 - displays file information including type, creator, bundle ID,
@@ -59,8 +60,8 @@ COMPILATION
 
 A Project Builder project, 'launch.pbproj', is included.  A
 precompiled binary is also provided.  'launch' was developed and
-tested under Mac OS 10.1 and 10.1.1 with the 10.1 Developer Tools, and
-does not require any additional software to build.
+tested under Mac OS 10.2.3 with the December 2002 Developer Tools,
+and does not require any additional software to build.
 
 USAGE
 -----
@@ -69,19 +70,22 @@ Just type 'launch' by itself to receive usage information.
 
 Some examples:
 
-% launch -ni com.apple.iTunes
-/Applications/iTunes.app
-[hint, hint]
-
 % launch -c 'R*ch'
 [BBEdit opens]
                                 
 % launch -pbc 'R*ch' test.txt
 [BBEdit starts printing test.txt in the background]
 
-% launch -l http://www.apple.com/
-[Your preferred Web browser opens Apple's Web site]
+% ls -l | launch -c CWIE 
+[CodeWarrior IDE opens with an untitled document containing the file list]
 
+% launch -i org.mozilla.navigator http://www.apple.com/
+[Chimera Navigator opens Apple's Web site]
+
+% launch -l launchsw@sabi.net
+[Your preferred email client opens a new message to comment on launch]
+
+% launch -f /Applications/Preview.app
 /Applications/Preview.app: Mac OS X application package 
         type: 'APPL'    creator: 'prvw'
         bundle ID: com.apple.Preview
@@ -108,8 +112,26 @@ Note that bundle IDs are not case-sensitive: com.barebones.BBEdit is
 the same as com.barebones.bbedit.
 
 
+Q. Why does application X open a file with a name beginning with 
+'launch-stationery-'?  
+
+A. Your application does not support stationery.  Applications which
+support stationery respond to it by creating a new untitled document
+with the contents of the stationery.  Most (all?) Cocoa applications,
+such as TextEdit, do not support stationery.  If you're looking for
+a text editor which supports stationery, try BBEdit, Tex-Edit Plus,
+the CodeWarrior IDE, or almost any other Carbon editor.
+
+For the curious: launch processes input by simultaneously reading it
+and writing to a temporary stationery file.  Once reading is complete,
+launch opens the stationery file with your selected application, and
+deletes the stationery after one minute (as a safeguard, it is not
+possible to accurately gauge how long it will take for the application
+to open the stationery).
+
+
 Q. Why can't I use -f with -c to get info on an application with a
-given creator?
+given creator (or -f with -i for a bundle ID)?
 
 A. This feature may be added to a later version (or add it yourself!),
 but there is a workaround.  Instead of:
@@ -125,16 +147,27 @@ use:
         kind: Application
 
 
-Q. Why do bundle IDs not work for non-packaged applications?
+Q. Why won't launch locate non-packaged applications by their bundle
+identifier?
 
-A. I think this is a LaunchServices/CFBundle bug.  For example, BBEdit
-6.1 for OS X was a packaged application; BBEdit 6.5 is not, however its
-'plst' resource contains a bundle ID.  LaunchServices is unable to
-locate BBEdit 6.5 by its bundle ID.
+A. This was a LaunchServices/CFBundle bug, fixed in Mac OS X 10.2.
+For example, BBEdit 6.1 for OS X was a packaged application; BBEdit
+6.5 is not, however its 'plst' resource contains a bundle ID.
+LaunchServices prior to OS X 10.2 was unable to locate BBEdit 6.5 by
+its bundle ID.
 
-Non-packaged applications usually come from older Mac OS applications,
-so they will have creators, which is a workaround (use -c instead of
--i).
+Non-packaged applications usually originated as Mac OS applications,
+so they will have creators.  If you're using Mac OS X 10.1.x, try
+using the creator instead of the bundle ID as a workaround (-c instead
+of -i).
+
+
+Q. Why does launch display '[can't access CFBundle for application]'
+in place of the bundle identifiers of non-packaged applications?
+
+A. This is a CFBundle bug which remains as of Mac OS X 10.2.3.  If
+this matters to you, please ask Apple to fix it, or implement a
+workaround in launch by parsing the 'plst' id 0 resource directly.
 
 
 Q. Why doesn't launch support opening items as root?
@@ -190,18 +223,37 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
-1.0a9 - 2 April 2002 - license, comments changes
-1.0a8 - 29 March 2002 - errors with -l (from ICeCoffEE), added rlaunch script
-1.0a7 - 3 March 2002 - print dates, sizes, folder valence, locked status for -f,
-                       don't abort on failure to obtain bundle information
-1.0a6 - 30 November 2001 - fixed incorrect messages, broken -u and crash on -nu
-1.0a5 - 28 November 2001 - print kind string for -f, still no new installer
-1.0a4 - 20 November 2001 - [try to] use Installer VISE instead of InstallAnywhere
-1.0a3 - 15 November 2001 - fixed package identification in -f, updated examples
-1.0a2 - 15 November 2001 - -f, removed broken -m
-1.0a1 - 14 November 2001 - renamed from "FindApp", launch by default, -u
-1.0d5 - 7 November 2001 - option -s for launching as root [nonfunctional]
-1.0d4 - 6 November 2001 - URL launching and Internet Config support
-1.0d3 - 4 November 2001 - more robust, support for docs without app
-1.0d2 - 4 November 2001 - options -opsbmhCX, -cin, documents
-1.0d1 - 26 August 2001 - returns path of application identified by creator
+1.0b1 - 14 December 2002
+ - accept "slack" (default http) URLs and email addresses with -l
+ - accept input from stdin with '-'
+ - open URLs with arbitrary applications when specified without -l
+ - builds without compiler warnings
+1.0a9 - 2 April 2002
+ - license, comments changes
+1.0a8 - 29 March 2002
+ - errors with -l (from ICeCoffEE), added rlaunch script
+1.0a7 - 3 March 2002
+ - print dates, sizes, folder valence, locked status for -f
+ - don't abort on failure to obtain bundle information
+1.0a6 - 30 November 2001
+ - fixed incorrect messages, broken -u and crash on -nu
+1.0a5 - 28 November 2001
+ - print kind string for -f, still no new installer
+1.0a4 - 20 November 2001
+ - [try to] use Installer VISE instead of InstallAnywhere
+1.0a3 - 15 November 2001
+ - fixed package identification in -f, updated examples
+1.0a2 - 15 November 2001
+ - -f, removed broken -m
+1.0a1 - 14 November 2001
+ - renamed from "FindApp", launch by default, -u
+1.0d5 - 7 November 2001
+ - option -s for launching as root [nonfunctional]
+1.0d4 - 6 November 2001
+ - URL launching and Internet Config support
+1.0d3 - 4 November 2001
+ - more robust, support for docs without app
+1.0d2 - 4 November 2001
+ - options -opsbmhCX, -cin, documents
+1.0d1 - 26 August 2001
+ - returns path of application identified by creator

@@ -54,6 +54,7 @@
 				014CEA490018CE3211CA2923,
 				014CEA4A0018CE3211CA2923,
 			);
+			hasScannedForEncodings = 1;
 			isa = PBXProject;
 			mainGroup = 08FB7794FE84155DC02AAC07;
 			projectDirPath = "";
@@ -82,6 +83,7 @@
 			refType = 4;
 		};
 		08FB7796FE84155DC02AAC07 = {
+			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = main.c;
 			refType = 4;
@@ -124,13 +126,13 @@
 			productInstallPath = "$(HOME)/bin";
 			productName = launch;
 			productReference = 034768E2FF38A6DC11DB9C8B;
-			shouldUseHeadermap = 1;
 		};
 		08FB77A0FE84155DC02AAC07 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXHeadersBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		08FB77A1FE84155DC02AAC07 = {
 			buildActionMask = 2147483647;
@@ -138,6 +140,7 @@
 				08FB77A2FE84155DC02AAC07,
 			);
 			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		08FB77A2FE84155DC02AAC07 = {
 			fileRef = 08FB7796FE84155DC02AAC07;
@@ -156,12 +159,14 @@
 				F579CF4C019A1C6D01AEEDB1,
 			);
 			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		08FB77A5FE84155DC02AAC07 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXRezBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 //080
 //081
@@ -226,6 +231,7 @@
 			};
 		};
 		F574340B01B8A47B01AEEDB1 = {
+			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = VERSION;
 			refType = 4;
@@ -243,6 +249,7 @@
 			};
 		};
 		F5C0CA9501B5740C01AEEDB1 = {
+			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = README;
 			refType = 4;
