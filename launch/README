@@ -76,7 +76,7 @@ Some examples:
 % launch -pbc 'R*ch' test.txt
 [BBEdit starts printing test.txt in the background]
 
-% ls -l | launch -c CWIE 
+% ls -l | launch -c CWIE -
 [CodeWarrior IDE opens with an untitled document containing the file list]
 
 % launch -i org.mozilla.navigator http://www.apple.com/
