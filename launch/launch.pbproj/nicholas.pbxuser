@@ -15,14 +15,14 @@
 			F561F49E0139D79101AEEDB1,
 		);
 		perUserDictionary = {
-			PBXPerProjectTemplateStateSaveDate = 67910254;
+			PBXPerProjectTemplateStateSaveDate = 71736398;
 			PBXWorkspaceContents = (
 				{
 					LeftSlideOut = {
 						Split0 = {
 							Split0 = {
 								NavContent0 = {
-									bookmark = E10E71F8040C3A7B00050002;
+									bookmark = E17A87E30446BD4A00050002;
 									history = (
 										E190CFFE03AAD96100AEFBE0,
 										E190CFFF03AAD96100AEFBE0,
@@ -38,17 +38,23 @@
 										E190D01C03ABB17800AEFBE0,
 										E190D01D03ABB17800AEFBE0,
 										E190D01E03ABB17800AEFBE0,
-										E190D01F03ABB17800AEFBE0,
-										E190D02003ABB17800AEFBE0,
-										E190D02103ABB17800AEFBE0,
-										E190D02203ABB17800AEFBE0,
 										E190D02303ABB17800AEFBE0,
-										E18D1CC5040C2AFC00050002,
-										E18D1CC6040C2AFC00050002,
-										E18D1CCB040C2AFC00050002,
-									);
-									nextStack = (
-										E18D1CCA040C2AFC00050002,
+										E17A87CF0446BD4A00050002,
+										E17A87D00446BD4A00050002,
+										E17A87D10446BD4A00050002,
+										E17A87D20446BD4A00050002,
+										E17A87D30446BD4A00050002,
+										E17A87D40446BD4A00050002,
+										E17A87D50446BD4A00050002,
+										E17A87D60446BD4A00050002,
+										E17A87D70446BD4A00050002,
+										E17A87D80446BD4A00050002,
+										E17A87D90446BD4A00050002,
+										E17A87DA0446BD4A00050002,
+										E17A87DB0446BD4A00050002,
+										E17A87DC0446BD4A00050002,
+										E17A87DD0446BD4A00050002,
+										E17A87DE0446BD4A00050002,
 									);
 									prevStack = (
 										E190D00403AAD96100AEFBE0,
@@ -64,11 +70,15 @@
 										E16C83C603F7980800050002,
 										E18D1CC8040C2AFC00050002,
 										E18D1CC9040C2AFC00050002,
+										E17A87DF0446BD4A00050002,
+										E17A87E00446BD4A00050002,
+										E17A87E10446BD4A00050002,
+										E17A87E20446BD4A00050002,
 									);
 								};
 								NavCount = 1;
 								NavGeometry0 = {
-									Frame = "{{0, 0}, {717, 554}}";
+									Frame = "{{0, 0}, {683, 704}}";
 									NavBarVisible = YES;
 								};
 								NavSplitVertical = NO;
@@ -103,9 +113,9 @@
 						Split0 = {
 							Split0 = {
 								NavContent0 = {
-									bookmark = E10E71F9040C3A7B00050002;
+									bookmark = E17A87E50446BD4A00050002;
 									history = (
-										E18D1CCD040C2AFC00050002,
+										E17A87E40446BD4A00050002,
 									);
 								};
 								NavCount = 1;
@@ -143,17 +153,17 @@
 			);
 			PBXWorkspaceGeometries = (
 				{
-					ContentSize = "{1001, 577}";
+					ContentSize = "{967, 727}";
 					LeftSlideOut = {
 						ActiveTab = 0;
 						ActiveTabName = PBXGroupTreeModule;
 						Collapsed = NO;
-						Frame = "{{0, 23}, {1001, 554}}";
+						Frame = "{{0, 23}, {967, 704}}";
 						Split0 = {
 							Collapsed = NO;
-							Frame = "{{284, 0}, {717, 554}}";
+							Frame = "{{284, 0}, {683, 704}}";
 							Split0 = {
-								Frame = "{{0, 0}, {717, 554}}";
+								Frame = "{{0, 0}, {683, 704}}";
 							};
 							SplitCount = 1;
 							Tab0 = {
@@ -215,7 +225,7 @@
 						};
 						SplitCount = 1;
 						Tab0 = {
-							Frame = "{{0, 0}, {260, 554}}";
+							Frame = "{{0, 0}, {260, 704}}";
 							GroupTreeTableConfiguration = (
 								TargetStatusColumn,
 								18,
@@ -268,7 +278,7 @@
 					StatusViewVisible = YES;
 					Template = 64ABBB4501FA494900185B06;
 					ToolbarVisible = YES;
-					WindowLocation = "{254, 56}";
+					WindowLocation = "{303, 43}";
 				},
 				{
 					ContentSize = "{685, 434}";
@@ -396,22 +406,38 @@
 					StatusViewVisible = YES;
 					Template = F5314676015831810DCA290F;
 					ToolbarVisible = YES;
-					WindowLocation = "{523, 122}";
+					WindowLocation = "{328, 75}";
 				},
 			);
-			PBXWorkspaceStateSaveDate = 67910254;
+			PBXWorkspaceStateSaveDate = 71736398;
 		};
 		perUserProjectItems = {
-			E10E71F8040C3A7B00050002 = E10E71F8040C3A7B00050002;
-			E10E71F9040C3A7B00050002 = E10E71F9040C3A7B00050002;
 			E16C83C603F7980800050002 = E16C83C603F7980800050002;
-			E18D1CC5040C2AFC00050002 = E18D1CC5040C2AFC00050002;
-			E18D1CC6040C2AFC00050002 = E18D1CC6040C2AFC00050002;
+			E17A87CF0446BD4A00050002 = E17A87CF0446BD4A00050002;
+			E17A87D00446BD4A00050002 = E17A87D00446BD4A00050002;
+			E17A87D10446BD4A00050002 = E17A87D10446BD4A00050002;
+			E17A87D20446BD4A00050002 = E17A87D20446BD4A00050002;
+			E17A87D30446BD4A00050002 = E17A87D30446BD4A00050002;
+			E17A87D40446BD4A00050002 = E17A87D40446BD4A00050002;
+			E17A87D50446BD4A00050002 = E17A87D50446BD4A00050002;
+			E17A87D60446BD4A00050002 = E17A87D60446BD4A00050002;
+			E17A87D70446BD4A00050002 = E17A87D70446BD4A00050002;
+			E17A87D80446BD4A00050002 = E17A87D80446BD4A00050002;
+			E17A87D90446BD4A00050002 = E17A87D90446BD4A00050002;
+			E17A87DA0446BD4A00050002 = E17A87DA0446BD4A00050002;
+			E17A87DB0446BD4A00050002 = E17A87DB0446BD4A00050002;
+			E17A87DC0446BD4A00050002 = E17A87DC0446BD4A00050002;
+			E17A87DD0446BD4A00050002 = E17A87DD0446BD4A00050002;
+			E17A87DE0446BD4A00050002 = E17A87DE0446BD4A00050002;
+			E17A87DF0446BD4A00050002 = E17A87DF0446BD4A00050002;
+			E17A87E00446BD4A00050002 = E17A87E00446BD4A00050002;
+			E17A87E10446BD4A00050002 = E17A87E10446BD4A00050002;
+			E17A87E20446BD4A00050002 = E17A87E20446BD4A00050002;
+			E17A87E30446BD4A00050002 = E17A87E30446BD4A00050002;
+			E17A87E40446BD4A00050002 = E17A87E40446BD4A00050002;
+			E17A87E50446BD4A00050002 = E17A87E50446BD4A00050002;
 			E18D1CC8040C2AFC00050002 = E18D1CC8040C2AFC00050002;
 			E18D1CC9040C2AFC00050002 = E18D1CC9040C2AFC00050002;
-			E18D1CCA040C2AFC00050002 = E18D1CCA040C2AFC00050002;
-			E18D1CCB040C2AFC00050002 = E18D1CCB040C2AFC00050002;
-			E18D1CCD040C2AFC00050002 = E18D1CCD040C2AFC00050002;
 			E190CFFE03AAD96100AEFBE0 = E190CFFE03AAD96100AEFBE0;
 			E190CFFF03AAD96100AEFBE0 = E190CFFF03AAD96100AEFBE0;
 			E190D00203AAD96100AEFBE0 = E190D00203AAD96100AEFBE0;
@@ -432,10 +458,6 @@
 			E190D01C03ABB17800AEFBE0 = E190D01C03ABB17800AEFBE0;
 			E190D01D03ABB17800AEFBE0 = E190D01D03ABB17800AEFBE0;
 			E190D01E03ABB17800AEFBE0 = E190D01E03ABB17800AEFBE0;
-			E190D01F03ABB17800AEFBE0 = E190D01F03ABB17800AEFBE0;
-			E190D02003ABB17800AEFBE0 = E190D02003ABB17800AEFBE0;
-			E190D02103ABB17800AEFBE0 = E190D02103ABB17800AEFBE0;
-			E190D02203ABB17800AEFBE0 = E190D02203ABB17800AEFBE0;
 			E190D02303ABB17800AEFBE0 = E190D02303ABB17800AEFBE0;
 			E190D02603ABB17800AEFBE0 = E190D02603ABB17800AEFBE0;
 			E190D02803ABB17800AEFBE0 = E190D02803ABB17800AEFBE0;
@@ -459,26 +481,6 @@
 			F561F49E0139D79101AEEDB1,
 		);
 	};
-	E10E71F8040C3A7B00050002 = {
-		fRef = 08FB7796FE84155DC02AAC07;
-		isa = PBXTextBookmark;
-		name = "main.c: printInfoFromURL";
-		rLen = 0;
-		rLoc = 27571;
-		rType = 0;
-		vrLen = 1918;
-		vrLoc = 26343;
-	};
-	E10E71F9040C3A7B00050002 = {
-		fRef = 08FB7796FE84155DC02AAC07;
-		isa = PBXTextBookmark;
-		name = "main.c: appVersion";
-		rLen = 0;
-		rLoc = 27268;
-		rType = 0;
-		vrLen = 395;
-		vrLoc = 26939;
-	};
 	E16C83C603F7980800050002 = {
 		fRef = F5C0CA9501B5740C01AEEDB1;
 		isa = PBXTextBookmark;
@@ -489,32 +491,311 @@
 		vrLen = 1585;
 		vrLoc = 0;
 	};
-	E18D1CC5040C2AFC00050002 = {
+	E17A87CF0446BD4A00050002 = {
+		fRef = E17A87E80446BD4A00050002;
+		glyphRangeLength = 375;
+		glyphRangeLocation = 1432;
+		isa = PBXDocBookmark;
+		name = "Miscellaneou17456789101112.html: FSRef newRef...";
+	};
+	E17A87D00446BD4A00050002 = {
+		fRef = E17A87EA0446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "CFURL.h: 282";
+		rLen = 58;
+		rLoc = 13157;
+		rType = 0;
+		vrLen = 1459;
+		vrLoc = 11853;
+	};
+	E17A87D10446BD4A00050002 = {
+		fRef = E17A87EB0446BD4A00050002;
+		glyphRangeLength = 2251;
+		glyphRangeLocation = 6098;
+		isa = PBXDocBookmark;
+		name = "Reading_Reso__Into_Memory.html: Handle GetRe...";
+	};
+	E17A87D20446BD4A00050002 = {
+		fRef = E17A87E90446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "Resources.h: 345";
+		rLen = 12;
+		rLoc = 9749;
+		rType = 0;
+		vrLen = 1176;
+		vrLoc = 9312;
+	};
+	E17A87D30446BD4A00050002 = {
+		fRef = E17A87EC0446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "memory: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 2067;
+		vrLoc = 0;
+	};
+	E17A87D40446BD4A00050002 = {
+		fRef = E17A87ED0446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "CFData.h: 21";
+		rLen = 0;
+		rLoc = 395;
+		rType = 0;
+		vrLen = 1169;
+		vrLoc = 0;
+	};
+	E17A87D50446BD4A00050002 = {
+		fRef = E17A87EE0446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "CFBase.h: 125";
+		rLen = 0;
+		rLoc = 3306;
+		rType = 0;
+		vrLen = 1468;
+		vrLoc = 4163;
+	};
+	E17A87D60446BD4A00050002 = {
+		fRef = E17A87EF0446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "CFDictionary.h: 516";
+		rLen = 76;
+		rLoc = 25628;
+		rType = 0;
+		vrLen = 2298;
+		vrLoc = 24570;
+	};
+	E17A87D70446BD4A00050002 = {
+		fRef = E17A87F00446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "CFPropertyList.h: 19";
+		rLen = 0;
+		rLoc = 449;
+		rType = 0;
+		vrLen = 1661;
+		vrLoc = 0;
+	};
+	E17A87D80446BD4A00050002 = {
+		fRef = E17A87F10446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "CFBundle.h: 99";
+		rLen = 0;
+		rLoc = 3680;
+		rType = 0;
+		vrLen = 1808;
+		vrLoc = 1718;
+	};
+	E17A87D90446BD4A00050002 = {
+		fRef = E17A87F20446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "MacMemory.h: 815";
+		rLen = 105;
+		rLoc = 21843;
+		rType = 0;
+		vrLen = 1330;
+		vrLoc = 21226;
+	};
+	E17A87DA0446BD4A00050002 = {
+		fRef = E17A87E60446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "CFString.h: 143";
+		rLen = 116;
+		rLoc = 6615;
+		rType = 0;
+		vrLen = 2410;
+		vrLoc = 5535;
+	};
+	E17A87DB0446BD4A00050002 = {
+		fRef = E17A87E70446BD4A00050002;
+		isa = PBXTextBookmark;
+		name = "MacTypes.h: 568";
+		rLen = 59;
+		rLoc = 23905;
+		rType = 0;
+		vrLen = 2364;
+		vrLoc = 22870;
+	};
+	E17A87DC0446BD4A00050002 = {
 		fRef = F5C0CA9501B5740C01AEEDB1;
 		isa = PBXTextBookmark;
-		name = "README: 229";
+		name = "README: 227";
 		rLen = 0;
-		rLoc = 7863;
+		rLoc = 7729;
 		rType = 0;
-		vrLen = 1350;
-		vrLoc = 7479;
+		vrLen = 1764;
+		vrLoc = 7580;
 	};
-	E18D1CC6040C2AFC00050002 = {
-		fRef = E18D1CD0040C2AFC00050002;
+	E17A87DD0446BD4A00050002 = {
+		fRef = F574340B01B8A47B01AEEDB1;
 		isa = PBXTextBookmark;
-		name = "CFBundle.h: 102";
-		rLen = 53;
-		rLoc = 3697;
+		name = "VERSION: 1";
+		rLen = 0;
+		rLoc = 3;
 		rType = 0;
-		vrLen = 1174;
-		vrLoc = 3020;
+		vrLen = 3;
+		vrLoc = 0;
+	};
+	E17A87DE0446BD4A00050002 = {
+		fRef = 08FB7796FE84155DC02AAC07;
+		isa = PBXTextBookmark;
+		name = "main.c: printInfoFromURL";
+		rLen = 0;
+		rLoc = 27861;
+		rType = 0;
+		vrLen = 3053;
+		vrLoc = 26387;
+	};
+	E17A87DF0446BD4A00050002 = {
+		fRef = 08FB7796FE84155DC02AAC07;
+		isa = PBXTextBookmark;
+		name = "main.c: printInfoFromURL";
+		rLen = 0;
+		rLoc = 29655;
+		rType = 0;
+		vrLen = 1523;
+		vrLoc = 26297;
+	};
+	E17A87E00446BD4A00050002 = {
+		fRef = F5C0CA9501B5740C01AEEDB1;
+		isa = PBXTextBookmark;
+		name = "README: 228";
+		rLen = 0;
+		rLoc = 7899;
+		rType = 0;
+		vrLen = 1387;
+		vrLoc = 7538;
+	};
+	E17A87E10446BD4A00050002 = {
+		fRef = 08FB7796FE84155DC02AAC07;
+		isa = PBXTextBookmark;
+		name = "main.c: printInfoFromURL";
+		rLen = 0;
+		rLoc = 27861;
+		rType = 0;
+		vrLen = 3053;
+		vrLoc = 26387;
+	};
+	E17A87E20446BD4A00050002 = {
+		fRef = F574340B01B8A47B01AEEDB1;
+		isa = PBXTextBookmark;
+		name = "VERSION: 1";
+		rLen = 0;
+		rLoc = 3;
+		rType = 0;
+		vrLen = 3;
+		vrLoc = 0;
+	};
+	E17A87E30446BD4A00050002 = {
+		fRef = 08FB7796FE84155DC02AAC07;
+		isa = PBXTextBookmark;
+		name = "main.c: osstatusstr";
+		rLen = 0;
+		rLoc = 6606;
+		rType = 0;
+		vrLen = 2056;
+		vrLoc = 286;
+	};
+	E17A87E40446BD4A00050002 = {
+		fRef = 08FB7796FE84155DC02AAC07;
+		isa = PBXTextBookmark;
+		rLen = 0;
+		rLoc = 715;
+		rType = 1;
+	};
+	E17A87E50446BD4A00050002 = {
+		fRef = 08FB7796FE84155DC02AAC07;
+		isa = PBXTextBookmark;
+		name = "main.c: printInfoFromURL";
+		rLen = 0;
+		rLoc = 29672;
+		rType = 0;
+		vrLen = 419;
+		vrLoc = 26900;
+	};
+	E17A87E60446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = CFString.h;
+		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFString.h;
+		refType = 0;
+	};
+	E17A87E70446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = MacTypes.h;
+		path = /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/MacTypes.h;
+		refType = 0;
+	};
+	E17A87E80446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = Miscellaneou17456789101112.html;
+		path = /Developer/Documentation/Carbon/Files/ResourceManager/Resource_Manager/Functions/Miscellaneou17456789101112.html;
+		refType = 0;
+	};
+	E17A87E90446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = Resources.h;
+		path = /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/Resources.h;
+		refType = 0;
+	};
+	E17A87EA0446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = CFURL.h;
+		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFURL.h;
+		refType = 0;
+	};
+	E17A87EB0446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = Reading_Reso__Into_Memory.html;
+		path = /Developer/Documentation/Carbon/Files/ResourceManager/Resource_Manager/Functions/Reading_Reso__Into_Memory.html;
+		refType = 0;
+	};
+	E17A87EC0446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = memory;
+		path = "/usr/include/gcc/darwin/3.1/g++-v3/memory";
+		refType = 0;
+	};
+	E17A87ED0446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = CFData.h;
+		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFData.h;
+		refType = 0;
+	};
+	E17A87EE0446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = CFBase.h;
+		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBase.h;
+		refType = 0;
+	};
+	E17A87EF0446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = CFDictionary.h;
+		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFDictionary.h;
+		refType = 0;
+	};
+	E17A87F00446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = CFPropertyList.h;
+		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFPropertyList.h;
+		refType = 0;
+	};
+	E17A87F10446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = CFBundle.h;
+		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBundle.h;
+		refType = 0;
+	};
+	E17A87F20446BD4A00050002 = {
+		isa = PBXFileReference;
+		name = MacMemory.h;
+		path = /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/MacMemory.h;
+		refType = 0;
 	};
 	E18D1CC8040C2AFC00050002 = {
 		fRef = F5C0CA9501B5740C01AEEDB1;
 		isa = PBXTextBookmark;
 		name = "README: 236";
 		rLen = 0;
-		rLoc = 8165;
+		rLoc = 8342;
 		rType = 0;
 		vrLen = 1380;
 		vrLoc = 7710;
@@ -529,49 +810,7 @@
 		vrLen = 1174;
 		vrLoc = 3020;
 	};
-	E18D1CCA040C2AFC00050002 = {
-		fRef = E18D1CCE040C2AFC00050002;
-		isa = PBXTextBookmark;
-		name = "CFBundle.h: 102";
-		rLen = 53;
-		rLoc = 3697;
-		rType = 0;
-		vrLen = 1174;
-		vrLoc = 3020;
-	};
-	E18D1CCB040C2AFC00050002 = {
-		fRef = 08FB7796FE84155DC02AAC07;
-		isa = PBXTextBookmark;
-		name = "main.c: printInfoFromURL";
-		rLen = 0;
-		rLoc = 27571;
-		rType = 0;
-		vrLen = 2023;
-		vrLoc = 26186;
-	};
-	E18D1CCD040C2AFC00050002 = {
-		fRef = 08FB7796FE84155DC02AAC07;
-		isa = PBXTextBookmark;
-		name = "main.c: appVersion";
-		rLen = 0;
-		rLoc = 27268;
-		rType = 0;
-		vrLen = 403;
-		vrLoc = 27119;
-	};
-	E18D1CCE040C2AFC00050002 = {
-		isa = PBXFileReference;
-		name = CFBundle.h;
-		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBundle.h;
-		refType = 0;
-	};
 	E18D1CCF040C2AFC00050002 = {
-		isa = PBXFileReference;
-		name = CFBundle.h;
-		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBundle.h;
-		refType = 0;
-	};
-	E18D1CD0040C2AFC00050002 = {
 		isa = PBXFileReference;
 		name = CFBundle.h;
 		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBundle.h;
@@ -589,7 +828,7 @@
 		isa = PBXTextBookmark;
 		name = "handle URL/file arguments";
 		rLen = 0;
-		rLoc = 17799;
+		rLoc = 17797;
 		rType = 0;
 		vrLen = 1773;
 		vrLoc = 14523;
@@ -755,46 +994,6 @@
 		vrLen = 1261;
 		vrLoc = 2846;
 	};
-	E190D01F03ABB17800AEFBE0 = {
-		fRef = F574340B01B8A47B01AEEDB1;
-		isa = PBXTextBookmark;
-		name = "VERSION: 1";
-		rLen = 0;
-		rLoc = 5;
-		rType = 0;
-		vrLen = 5;
-		vrLoc = 0;
-	};
-	E190D02003ABB17800AEFBE0 = {
-		fRef = E190D03703ABB17800AEFBE0;
-		isa = PBXTextBookmark;
-		name = "CFBase.h: 1";
-		rLen = 0;
-		rLoc = 0;
-		rType = 0;
-		vrLen = 1128;
-		vrLoc = 0;
-	};
-	E190D02103ABB17800AEFBE0 = {
-		fRef = E190D03B03ABB17800AEFBE0;
-		isa = PBXTextBookmark;
-		name = "CFString.h: 198";
-		rLen = 25;
-		rLoc = 9326;
-		rType = 0;
-		vrLen = 1770;
-		vrLoc = 8490;
-	};
-	E190D02203ABB17800AEFBE0 = {
-		fRef = E190D03C03ABB17800AEFBE0;
-		isa = PBXTextBookmark;
-		name = "CFURL.h: 51";
-		rLen = 0;
-		rLoc = 2112;
-		rType = 0;
-		vrLen = 1754;
-		vrLoc = 1462;
-	};
 	E190D02303ABB17800AEFBE0 = {
 		fRef = E190D03D03ABB17800AEFBE0;
 		isa = PBXTextBookmark;
@@ -881,12 +1080,6 @@
 		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Resources/English.lproj/Documentation/StringServices/String_Services/Functions/Miscellaneous.html;
 		refType = 0;
 	};
-	E190D03703ABB17800AEFBE0 = {
-		isa = PBXFileReference;
-		name = CFBase.h;
-		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBase.h;
-		refType = 0;
-	};
 	E190D03803ABB17800AEFBE0 = {
 		isa = PBXFileReference;
 		name = CFArray.h;
@@ -903,18 +1096,6 @@
 		isa = PBXFileReference;
 		name = Files.h;
 		path = /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/Files.h;
-		refType = 0;
-	};
-	E190D03B03ABB17800AEFBE0 = {
-		isa = PBXFileReference;
-		name = CFString.h;
-		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFString.h;
-		refType = 0;
-	};
-	E190D03C03ABB17800AEFBE0 = {
-		isa = PBXFileReference;
-		name = CFURL.h;
-		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFURL.h;
 		refType = 0;
 	};
 	E190D03D03ABB17800AEFBE0 = {

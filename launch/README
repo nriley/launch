@@ -1,4 +1,4 @@
-launch 1.0b2 [9 March 2003]
+launch 1.0b3 [xx April 2003]
 ============
 
 A command-line launcher for Mac OS X in the spirit of open(1).
@@ -224,6 +224,10 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
+1.0b3 - xx April 2003
+ - work around CFBundle bug to report bundle identifiers and versions
+   from resource forks of unpackaged Carbon applications and Classic
+   applications [Lloyd Dupont]
 1.0b2 - 9 March 2003
  - fixed install instructions to create /usr/local/bin if needed
  - show bundle version with text, hex and integer representations

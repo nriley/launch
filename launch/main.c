@@ -55,7 +55,7 @@ Thanks to:
 
 const char *APP_NAME;
 
-#define VERSION "1.0b2"
+#define VERSION "1.0b3"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -664,31 +664,78 @@ void printInfoFromURL(CFURLRef url, void *context) {
             strncpy(tmpBuffer, (char *)&info.filetype, 4); printf("\ttype: '%s'", tmpBuffer);
             strncpy(tmpBuffer, (char *)&info.creator, 4); printf("\tcreator: '%s'\n", tmpBuffer);
         }
-        if (info.flags & kLSItemInfoIsPackage ||
-        	info.flags & kLSItemInfoIsApplication && info.flags & kLSItemInfoIsNativeApp) {
+        if (info.flags & kLSItemInfoIsPackage || info.flags & kLSItemInfoIsApplication) {
         	// a package, or possibly a native app with a 'plst' resource
             CFBundleRef bundle = CFBundleCreate(NULL, url);
-            CFStringRef bundleID;
-            if (bundle == NULL) { // OS X bug causes this to fail when it shouldn't, so just note it, don't die
-            	if (info.flags & kLSItemInfoIsApplication) printf("\t[can't access CFBundle for application]\n");
+            CFStringRef bundleID = NULL;
+            CFStringRef appVersion = NULL;
+            UInt32 intVersion = 0;
+            if (bundle == NULL && (info.flags & kLSItemInfoIsApplication)) {
+                FSRef fsr;
+                if (info.flags & kLSItemInfoIsPackage || !CFURLGetFSRef(url, &fsr)) {
+                    printf("\t[can't access CFBundle for application]\n");
+                } else { // OS X bug causes this to fail when it shouldn't, so fake it
+                    SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
+                    OSStatus err = ResError();
+                    if (err != noErr) {
+                        printf("\t[can't open resource fork: %s]\n", osstatusstr(err));
+                    } else {
+                        Handle h = Get1Resource('plst', 0);
+                        if ( (err = ResError()) != noErr || h == NULL) {
+                            if (err != noErr && err != resNotFound) osstatusexit(err, "unable to read 'plst' 0 resource");
+                        } else {
+                            CFDataRef plstData = CFDataCreate(NULL, *h, GetHandleSize(h));
+                            CFStringRef error;
+                            CFPropertyListRef infoPlist = CFPropertyListCreateFromXMLData(NULL, plstData, kCFPropertyListImmutable, &error);
+                            if (infoPlist == NULL) {
+                                CFStringGetCString(error, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
+                                printf("\t['plst' 0 resource invalid: %s]\n", tmpBuffer);
+                                CFRelease(error);
+                            } else {
+                                // mimic CFBundle logic below
+                                bundleID = CFDictionaryGetValue(infoPlist, kCFBundleIdentifierKey);
+                                if (bundleID != NULL) CFRetain(bundleID);
+                                CFStringRef appVersion = CFDictionaryGetValue(infoPlist, CFSTR("CFBundleShortVersionString"));
+                                if (appVersion == NULL)
+                                    appVersion = CFDictionaryGetValue(infoPlist, kCFBundleVersionKey);
+                                if (appVersion != NULL) CFRetain(appVersion);
+                                CFRelease(infoPlist);
+                            }
+                        }
+                        VersRecHndl vers = (VersRecHndl)Get1Resource('vers', 1);
+                        if ( (err = ResError()) != noErr || vers == NULL) {
+                            if (err != noErr && err != resNotFound) osstatusexit(err, "unable to read 'vers' 1 resource");
+                        } else {
+                            if (appVersion == NULL) { // prefer 'plst' version
+                                appVersion = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
+                            }
+                            intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
+                        }
+                        CloseResFile(resFork);
+                    }
+                }
             } else {
                 bundleID = CFBundleGetIdentifier(bundle);
-                if (bundleID != NULL) {
-                    CFStringGetCString(bundleID, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
-                    printf("\tbundle ID: %s\n", tmpBuffer);
-                }
+                if (bundleID != NULL) CFRetain(bundleID);
 		// prefer a short version string, e.g. "1.0 Beta" instead of "51" for Safari
 		CFStringRef appVersion = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleShortVersionString"));
 		if (appVersion == NULL)
 		    appVersion = CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey);
-		if (appVersion != NULL) {
-                    UInt32 intVersion = CFBundleGetVersionNumber(bundle);
-                    CFStringGetCString(appVersion, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
-                    printf("\tversion: %s", tmpBuffer);
-                    if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);
-                    putchar('\n');
-		}
+		if (appVersion != NULL)
+                    intVersion = CFBundleGetVersionNumber(bundle);
                 CFRelease(bundle);
+            }
+            if (bundleID != NULL) {
+                CFStringGetCString(bundleID, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
+                printf("\tbundle ID: %s\n", tmpBuffer);
+                CFRelease(bundleID);
+            }
+            if (appVersion != NULL) {
+                CFStringGetCString(appVersion, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
+                printf("\tversion: %s", tmpBuffer);
+                if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);
+                putchar('\n');
+                CFRelease(appVersion);
             }
         }
         
