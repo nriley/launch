@@ -687,6 +687,10 @@ void printInfoFromURL(CFURLRef url, void *context) {
                             CFDataRef plstData = CFDataCreate(NULL, *h, GetHandleSize(h));
                             CFStringRef error;
                             CFPropertyListRef infoPlist = CFPropertyListCreateFromXMLData(NULL, plstData, kCFPropertyListImmutable, &error);
+			    if (plstData != NULL) {
+			        CFRelease(plstData);
+			        plstData = NULL;
+			    }
                             if (infoPlist == NULL) {
                                 CFStringGetCString(error, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
                                 printf("\t['plst' 0 resource invalid: %s]\n", tmpBuffer);
