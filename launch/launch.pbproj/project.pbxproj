@@ -6,8 +6,6 @@
 	objectVersion = 39;
 	objects = {
 		014CEA490018CE3211CA2923 = {
-			buildRules = (
-			);
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -21,8 +19,6 @@
 			name = Development;
 		};
 		014CEA4A0018CE3211CA2923 = {
-			buildRules = (
-			);
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
@@ -42,9 +38,8 @@
 //033
 //034
 		034768E2FF38A6DC11DB9C8B = {
-			expectedFileType = "compiled.mach-o.executable";
-			fallbackIsa = PBXFileReference;
-			isa = PBXExecutableFileReference;
+			explicitFileType = "compiled.mach-o.executable";
+			isa = PBXFileReference;
 			path = launch;
 			refType = 3;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -61,6 +56,8 @@
 //084
 		08FB7793FE84155DC02AAC07 = {
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.2;
+				SDKROOT = /Developer/SDKs/MacOSX10.2.8.sdk;
 			};
 			buildStyles = (
 				014CEA490018CE3211CA2923,
@@ -97,12 +94,13 @@
 			sourceTree = "<group>";
 		};
 		08FB7796FE84155DC02AAC07 = {
-			expectedFileType = sourcecode.c.c;
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
 			path = main.c;
 			refType = 4;
 			sourceTree = "<group>";
+			tabWidth = 8;
 		};
 		08FB779DFE84155DC02AAC07 = {
 			children = (
@@ -196,9 +194,8 @@
 //093
 //094
 		09AB6884FE841BABC02AAC07 = {
-			expectedFileType = wrapper.framework;
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
 			name = CoreFoundation.framework;
 			path = /System/Library/Frameworks/CoreFoundation.framework;
 			refType = 0;
@@ -240,9 +237,8 @@
 //F53
 //F54
 		F561F49F0139D7DD01AEEDB1 = {
-			expectedFileType = wrapper.framework;
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
 			name = ApplicationServices.framework;
 			path = /System/Library/Frameworks/ApplicationServices.framework;
 			refType = 0;
@@ -255,17 +251,16 @@
 			};
 		};
 		F574340B01B8A47B01AEEDB1 = {
-			expectedFileType = text;
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = text;
 			path = VERSION;
 			refType = 4;
 			sourceTree = "<group>";
 		};
 		F579CF4B019A1C6D01AEEDB1 = {
-			expectedFileType = wrapper.framework;
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
 			name = Security.framework;
 			path = /System/Library/Frameworks/Security.framework;
 			refType = 0;
@@ -278,17 +273,16 @@
 			};
 		};
 		F5C0CA9501B5740C01AEEDB1 = {
-			expectedFileType = text;
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = text;
 			path = README;
 			refType = 4;
 			sourceTree = "<group>";
 		};
 		F5E819BF0198DFF701AEEDB1 = {
-			expectedFileType = wrapper.framework;
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
 			name = Carbon.framework;
 			path = /System/Library/Frameworks/Carbon.framework;
 			refType = 0;

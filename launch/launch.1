@@ -1,12 +1,12 @@
-.Dd Wed Oct 22 2003      \" DATE 
+.Dd Sun Apr 3 2005       \" DATE 
 .Dt LAUNCH 1 LOCAL	 \" Program name and manual section number 
-.Os launch 1.0
+.Os launch 1.0.1
 .Sh NAME
 .Nm launch
 .Nd find, open, print, or get information about files, folders, disks and URLs
 .Sh SYNOPSIS
 .Nm launch
-.Op Fl npswbmhCX         \" [-npswbmhCX]
+.Op Fl npswbmhCXU        \" [-npswbmhCXU]
 .Op Fl c Ar creator      \" [-c creator]
 .Op Fl i Ar bundleID     \" [-i bundleID]
 .Op Fl u Ar URL          \" [-u URL]
@@ -14,7 +14,7 @@
 .Op Ar item ...          \" [item ...]
 .Op Ar -                 \" [-]
 .Nm 
-.Op Fl npflswbmhCX
+.Op Fl npflswbmhCXU
 .Ar item ...
 .Sh DESCRIPTION
 The
@@ -98,6 +98,11 @@ Force CFM/PEF Carbon application to open in Classic.
 .It Fl X
 Don't start the Classic environment for this Classic application if
 Classic isn't running.
+.It Fl U
+Interpret items as URLs, even if files with the same names as the URLs
+exist.  (This was the default behavior in
+.Nm
+1.0.)
 .El
 .Sh SEE ALSO 
 .\" List links in ascending order by section, alphabetically within a section.

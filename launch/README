@@ -1,5 +1,5 @@
-launch 1.0 [23 October 2003]
-==========
+launch 1.0.1 [3 April 2005]
+============
 
 A command-line launcher for Mac OS X in the spirit of open(1).
 
@@ -55,15 +55,15 @@ modify the install line as appropriate.
 
 Uninstallation:
 
-% sudo rm -f /usr/local/bin/launch /usr/local/man/man1/appswitch.1
+% sudo rm -f /usr/local/bin/launch /usr/local/man/man1/launch.1
 
 COMPILATION
 -----------
 
 An Xcode/Project Builder project, 'launch.pbproj', is included.  A
 precompiled binary is also provided.  'launch' was developed and
-tested under Mac OS 10.3 with the October 2003 Developer Tools, and
-does not require any additional software to build.
+tested under Mac OS 10.3.8 with Xcode 1.5, and does not require any
+additional software to build.
 
 USAGE
 -----
@@ -201,8 +201,8 @@ Are you logged in? (-600)
 In order to perform certain operations, launch needs to talk to
 various system services owned by the currently logged-on user.  If you
 aren't using 'launch' from a terminal currently logged into the Mac OS
-X GUI, certain operations may not work.  Try opening Terminal.app,
-creating a new terminal, and trying again.
+X GUI, certain operations may not work.  Try opening Terminal, creating
+a new terminal window, and trying again.
 
 Another possibility is to create your own interprocess messaging.
 For example, place this script in a file:
@@ -236,6 +236,20 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
+1.0.1 - 3 April 2005
+ - prefer files to URLs; added -U for old behavior
+ - don't display extraneous leading './' on file paths
+ - display 'zero items', not '0 items', for consistency
+ - display versions of non-applications
+ - read Info.plists embedded in unbundled Mach-O applications
+ - non-ASCII arguments are now handled with the filesystem, rather
+   than the system encoding [Derrick Bass]
+ - explicitly use UTF-8 everywhere else to properly interpret and
+   display non-ASCII filenames and URLs
+ - reading OSTypes and 'vers' resources, and opening URLs with
+   Internet Config still uses the system encoding, converting as
+   necessary for display
+ - should be buildable on 10.2 again
 1.0 - 23 October 2003
  - work around CFBundle bug to report bundle identifiers and versions
    from resource forks of unpackaged Carbon applications and Classic

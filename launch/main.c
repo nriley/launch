@@ -2,7 +2,7 @@
  launch - a smarter 'open' replacement
  Nicholas Riley <launchsw@sabi.net>
 
- Copyright (c) 2001-03, Nicholas Riley
+ Copyright (c) 2001-05, Nicholas Riley
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -50,7 +50,7 @@ Thanks to:
 
 const char *APP_NAME;
 
-#define VERSION "1.0"
+#define VERSION "1.0.1"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -58,12 +58,13 @@ const char *APP_NAME;
 struct {
     OSType creator;
     CFStringRef bundleID, name;
+    Boolean forceURLs;
     enum { ACTION_FIND, ACTION_FIND_ITEMS,
 	   ACTION_OPEN, ACTION_OPEN_ITEMS, 
 	   ACTION_INFO_ITEMS, ACTION_LAUNCH_URLS } action;
 } OPTS = 
 {
-    kLSUnknownCreator, NULL, NULL,
+    kLSUnknownCreator, NULL, NULL, false,
     ACTION_DEFAULT
 };
 
@@ -86,6 +87,7 @@ static errList ERRS = {
     { kLSNotRegisteredErr, "application not registered in Launch Services database" },
     { -10827, "application package contains no executable, or an unusable executable" }, /* kLSNoExecutableErr, not defined in 10.2 */
     { -10828, "Classic environment required but not available" }, /* kLSNoClassicEnvironmentErr, not defined in 10.2 */
+    { -10829, "unable to launch multiple instances of application" }, /* kLSMultipleSessionsNotSupportedErr, not defined in 10.2 */
 #ifndef BROKEN_AUTHORIZATION
     // Security framework errors
     { errAuthorizationDenied, "authorization denied" },
@@ -96,6 +98,7 @@ static errList ERRS = {
     { icNoURLErr, "not a URL" },
     { icInternalErr, "internal Internet Config error" },
     // Misc. errors
+    { nsvErr, "the volume cannot be found (buggy filesystem?)" },
     { procNotFound, "unable to connect to system service.\nAre you logged in?" },
     { kCGErrorIllegalArgument, "window server error.\nAre you logged in?" },
     { kCGErrorApplicationRequiresNewerSystem, "application requires a newer Mac OS X version" },
@@ -104,8 +107,8 @@ static errList ERRS = {
 };
 
 void usage() {
-    fprintf(stderr, "usage: %s [-npswbmhCX] [-c creator] [-i bundleID] [-u URL] [-a name] [item ...] [-]\n"
-                    "   or: %s [-npflswbmhCX] item ...\n", APP_NAME, APP_NAME);
+    fprintf(stderr, "usage: %s [-npswbmhCXU] [-c creator] [-i bundleID] [-u URL] [-a name] [item ...] [-]\n"
+                    "   or: %s [-npflswbmhCXU] item ...\n", APP_NAME, APP_NAME);
     fprintf(stderr,
         "  -n            print matching paths/URLs instead of opening them\n"
         "  -p            ask application(s) to print document(s)\n"
@@ -120,13 +123,14 @@ void usage() {
         "  -h            hide application once it's finished opening\n"
         "  -C            force CFM/PEF Carbon application to launch in Classic\n"
         "  -X            don't start Classic for this app if Classic isn't running\n"
+	"  -U            interpret items as URLs, even if same-named files exist\n"
         "  -c creator    match application by four-character creator code ('ToyS')\n"
         "  -i bundle ID  match application by bundle identifier (com.apple.scripteditor)\n"
         "  -u URL        open application at file:// URL (NOT RECOMMENDED for scripts)\n"
         "  -a name       match application by name (NOT RECOMMENDED, very fragile)\n"
         "'document' may be a file, folder, or disk - whatever the application can open.\n"
         "'item' may be a file, folder, disk, or URL.\n\n");
-    fprintf(stderr, "launch "VERSION" (c) 2001-03 Nicholas Riley <http://web.sabi.net/nriley/software/>.\n"
+    fprintf(stderr, "launch "VERSION" (c) 2001-05 Nicholas Riley <http://web.sabi.net/nriley/software/>.\n"
 	            "Please send bugs, suggestions, etc. to <launchsw@sabi.net>.\n");
 
     exit(1);
@@ -340,7 +344,7 @@ void getargs(int argc, char * const argv[]) {
 
     if (argc == 1) usage();
     
-    while ( (ch = getopt(argc, argv, "npflswbmhCXc:i:u:a:")) != -1) {
+    while ( (ch = getopt(argc, argv, "npflswbmhCXUc:i:u:a:")) != -1) {
         switch (ch) {
         case 'n':
             if (OPTS.action != ACTION_DEFAULT) errexit("choose only one of -n, -p, -f, -l options");
@@ -383,21 +387,22 @@ void getargs(int argc, char * const argv[]) {
         case 'h': LSPEC.launchFlags |= kLSLaunchAndHide; break;    // hide once launched
         case 'C': LSPEC.launchFlags |= kLSLaunchInClassic; break;  // force Classic
         case 'X': LSPEC.launchFlags ^= kLSLaunchStartClassic; break;// don't start Classic for app
+	case 'U': OPTS.forceURLs = true; break;
         case 'c':
             if (strlen(optarg) != 4) errexit("creator (argument of -c) must be four characters long");
             OPTS.creator = *(OSTypePtr)optarg;
 	    appSpecified = true;
             break;
         case 'i':
-            OPTS.bundleID = CFStringCreateWithCString(NULL, optarg, CFStringGetSystemEncoding());
+            OPTS.bundleID = CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8);
 	    appSpecified = true;
             break;
         case 'a':
-            OPTS.name = CFStringCreateWithCString(NULL, optarg, CFStringGetSystemEncoding());
+            OPTS.name = CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8);
 	    appSpecified = true;
             break;
 	case 'u':
-            { CFStringRef str = CFStringCreateWithCString(NULL, optarg, CFStringGetSystemEncoding());
+            { CFStringRef str = CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8);
 	      LSPEC.appURL = CFURLCreateWithString(NULL, str, NULL);
               if (str != NULL) CFRelease(str);
             }
@@ -470,20 +475,25 @@ void getargs(int argc, char * const argv[]) {
                 itemURL = CFURLCreateFromFileSystemRepresentation(NULL, TEMPFILE, strlen(TEMPFILE), false);
                 LSPEC.launchFlags ^= kLSLaunchAsync;
             } else {
-                argStr = CFStringCreateWithCString(NULL, argv[i], CFStringGetSystemEncoding());
-                // check for URLs
-                itemURL = normalizedURLFromString(argStr);
-                if (itemURL == NULL && OPTS.action == ACTION_LAUNCH_URLS) {
-                    // check for email addresses
-                    if (strchr(argv[i], '@') != NULL && strchr(argv[i], '/') == NULL)
-                        itemURL = normalizedURLFromPrefixSlack(CFSTR("mailto:"), argStr);
-                    // check for "slack" URLs
-                    if (itemURL == NULL && strchr(argv[i], '.') != NULL && strchr(argv[i], '/') != argv[i])
-                        itemURL = normalizedURLFromPrefixSlack(CFSTR("http://"), argStr);
-                }
+		struct stat stat_buf;
+		if (!OPTS.forceURLs && stat(argv[i], &stat_buf) == 0) {
+		    itemURL = NULL;
+		} else {
+		    argStr = CFStringCreateWithCString(NULL, argv[i], kCFStringEncodingUTF8);
+		    // check for URLs
+		    itemURL = normalizedURLFromString(argStr);
+		    if (itemURL == NULL && OPTS.action == ACTION_LAUNCH_URLS) {
+			// check for email addresses
+			if (strchr(argv[i], '@') != NULL && strchr(argv[i], '/') == NULL)
+			    itemURL = normalizedURLFromPrefixSlack(CFSTR("mailto:"), argStr);
+			// check for "slack" URLs
+			if (itemURL == NULL && strchr(argv[i], '.') != NULL && strchr(argv[i], '/') != argv[i])
+			    itemURL = normalizedURLFromPrefixSlack(CFSTR("http://"), argStr);
+		    }
+		}
                 if (itemURL == NULL) {
                     // check for file paths
-                    itemURL = CFURLCreateWithFileSystemPath(NULL, argStr, kCFURLPOSIXPathStyle, false);
+                    itemURL = CFURLCreateFromFileSystemRepresentation(NULL, argv[i], strlen(argv[i]), false);
                     err = LSCopyItemInfoForURL(itemURL, kLSRequestExtensionFlagsOnly, &docInfo);
                     if (err != noErr) osstatusexit(err, "unable to locate '%s'", argv[i]);
                 }
@@ -495,24 +505,40 @@ void getargs(int argc, char * const argv[]) {
     }
 }
 
-void printPathFromURL(CFURLRef url, FILE *stream) {
-    CFStringRef scheme, pathOrURL;
-    static char strBuffer[STRBUF_LEN];
-    
-    check(url != NULL && stream != NULL);
-
-    scheme = CFURLCopyScheme(url);
-    
-    if (CFEqual(scheme, CFSTR("file")))
-        pathOrURL = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-    else
-        pathOrURL = CFURLGetString(url);
-
-    strBuffer[0] = '\0';
-    CFStringGetCString(pathOrURL, strBuffer, STRBUF_LEN, CFStringGetSystemEncoding()); // XXX buffer size issues?
-    fprintf(stream, "%s\n", strBuffer);
+Boolean stringFromURLIsRemote(CFURLRef url, char *strBuffer) {
+    CFStringRef scheme = CFURLCopyScheme(url);
+    Boolean isRemote = !CFEqual(scheme, CFSTR("file"));
     CFRelease(scheme);
-    CFRelease(pathOrURL);
+    
+    strBuffer[0] = '\0';
+    if (isRemote) {
+        CFStringRef urlString = CFURLGetString(url);
+	CFStringGetCString(urlString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8);
+	CFRelease(urlString);
+    } else {
+	if (CFURLGetFileSystemRepresentation(url, false, strBuffer, STRBUF_LEN)) {
+	    if (strBuffer[0] == '.' && strBuffer[1] == '/') {
+		// remove the leading "./"
+		char *fromBufPtr = strBuffer + 2;
+		while (true) {
+		    *strBuffer = *fromBufPtr;
+		    if (*fromBufPtr == '\0') break;
+		    strBuffer++;
+		    fromBufPtr++;
+		}
+	    }
+	} else {
+	    strcpy(strBuffer, "[can't get path: CFURLGetFileSystemRepresentation failed]");
+	}
+    }
+    return isRemote;
+}
+
+void printPathFromURL(CFURLRef url, FILE *stream) {
+    static char strBuffer[STRBUF_LEN];
+    check(url != NULL && stream != NULL);
+    stringFromURLIsRemote(url, strBuffer);
+    fprintf(stream, "%s\n", strBuffer);
 }
 
 void printDateTime(const char *label, UTCDateTime *utcTime, const char *postLabel, Boolean printIfEmpty) {
@@ -581,7 +607,12 @@ void printMoreInfoFromURL(CFURLRef url) {
     if (err != noErr) osstatusexit(err, "unable to get catalog information for file");
 
     if (fscInfo.nodeFlags & kFSNodeIsDirectoryMask) {
-        printf("\tcontents: %lu item%s\n", fscInfo.valence, fscInfo.valence != 1 ? "s" : "");
+        printf("\tcontents: ");
+	switch (fscInfo.valence) {
+	case 0: printf("zero items\n"); break;
+	case 1: printf("1 item\n"); break;
+	default: printf("%lu items\n", fscInfo.valence);
+	}
     } else {
         printSizes("data fork size", fscInfo.dataLogicalSize, fscInfo.dataPhysicalSize, true);
         printSizes("rsrc fork size", fscInfo.rsrcLogicalSize, fscInfo.rsrcPhysicalSize, false);
@@ -604,28 +635,39 @@ void printMoreInfoFromURL(CFURLRef url) {
     printDateTime("backed up", &fscInfo.backupDate, "", false);
 }
 
+const char *utf8StringFromCFStringRef(CFStringRef cfStr) {
+    static char tmpBuffer[STRBUF_LEN];
+    CFStringGetCString(cfStr, tmpBuffer, STRBUF_LEN, kCFStringEncodingUTF8);
+    return tmpBuffer;
+}
+
+const char *utf8StringFromOSType(OSType osType) {
+    CFStringRef typeStr = CFStringCreateWithBytes(NULL, (const char *)&osType, 4, CFStringGetSystemEncoding(), false);
+    if (typeStr == NULL) {
+	// punt to displaying verbatim
+	static char tmpBuffer[4];
+	tmpBuffer[4] = '\0';
+	strncpy(tmpBuffer, (const char *)&osType, 4);
+	return tmpBuffer;
+    }
+    const char *buffer = utf8StringFromCFStringRef(typeStr);
+    CFRelease(typeStr);
+    return buffer;
+}
+
 // 'context' is to match prototype for CFArrayApplierFunction, it's unused
 void printInfoFromURL(CFURLRef url, void *context) {
-    CFStringRef scheme, pathOrURL, kind;
-    Boolean isRemote;
-    static char strBuffer[STRBUF_LEN], tmpBuffer[STRBUF_LEN];
+    CFStringRef kind;
+    static char strBuffer[STRBUF_LEN];
     
     check(url != NULL && context == NULL);
 
-    scheme = CFURLCopyScheme(url);
-    
-    isRemote = !CFEqual(scheme, CFSTR("file"));
-    if (isRemote)
-        pathOrURL = CFURLGetString(url);
-    else
-        pathOrURL = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-
-    strBuffer[0] = '\0';
-    CFStringGetCString(pathOrURL, strBuffer, STRBUF_LEN, CFStringGetSystemEncoding()); // XXX buffer size issues?
-    if (isRemote)
+    if (stringFromURLIsRemote(url, strBuffer))
         printf("<%s>: URL\n", strBuffer);
     else {
         static LSItemInfoRecord info;
+	CFStringRef version = NULL;
+	UInt32 intVersion = 0;
         OSStatus err = LSCopyItemInfoForURL(url, kLSRequestAllInfo, &info);
         if (err != noErr) osstatusexit(err, "unable to get information about '%s'", strBuffer);
         
@@ -654,16 +696,13 @@ void printInfoFromURL(CFURLRef url, void *context) {
 
         printf("\n");
         if (!(info.flags & kLSItemInfoIsContainer) || info.flags & kLSItemInfoIsPackage) {
-            tmpBuffer[4] = '\0';
-            strncpy(tmpBuffer, (char *)&info.filetype, 4); printf("\ttype: '%s'", tmpBuffer);
-            strncpy(tmpBuffer, (char *)&info.creator, 4); printf("\tcreator: '%s'\n", tmpBuffer);
+	    printf("\ttype: '%s'", utf8StringFromOSType(info.filetype));
+	    printf("\tcreator: '%s'\n", utf8StringFromOSType(info.creator));
         }
         if (info.flags & kLSItemInfoIsPackage || info.flags & kLSItemInfoIsApplication) {
         	// a package, or possibly a native app with a 'plst' resource
             CFBundleRef bundle = CFBundleCreate(NULL, url);
             CFStringRef bundleID = NULL;
-            CFStringRef appVersion = NULL;
-            UInt32 intVersion = 0;
             if (bundle == NULL && (info.flags & kLSItemInfoIsApplication)) {
                 FSRef fsr;
                 if (info.flags & kLSItemInfoIsPackage || !CFURLGetFSRef(url, &fsr)) {
@@ -682,21 +721,23 @@ void printInfoFromURL(CFURLRef url, void *context) {
                             CFStringRef error;
                             CFPropertyListRef infoPlist = CFPropertyListCreateFromXMLData(NULL, plstData, kCFPropertyListImmutable, &error);
 			    if (plstData != NULL) {
-			        CFRelease(plstData);
-			        plstData = NULL;
+				CFRelease(plstData);
+				plstData = NULL;
+			    } else {
+				// this function should handle the 'plst' 0 case too, but it doesn't provide error messages; however, it handles the case of an unbundled Mach-O binary, so it is useful as a fallback
+				infoPlist = CFBundleCopyInfoDictionaryForURL(url);
 			    }
                             if (infoPlist == NULL) {
-                                CFStringGetCString(error, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
-                                printf("\t['plst' 0 resource invalid: %s]\n", tmpBuffer);
+                                printf("\t['plst' 0 resource invalid: %s]\n", utf8StringFromCFStringRef(error));
                                 CFRelease(error);
                             } else {
                                 // mimic CFBundle logic below
                                 bundleID = CFDictionaryGetValue(infoPlist, kCFBundleIdentifierKey);
                                 if (bundleID != NULL) CFRetain(bundleID);
-                                appVersion = CFDictionaryGetValue(infoPlist, CFSTR("CFBundleShortVersionString"));
-                                if (appVersion == NULL)
-                                    appVersion = CFDictionaryGetValue(infoPlist, kCFBundleVersionKey);
-                                if (appVersion != NULL) CFRetain(appVersion);
+                                version = CFDictionaryGetValue(infoPlist, CFSTR("CFBundleShortVersionString"));
+                                if (version == NULL)
+                                    version = CFDictionaryGetValue(infoPlist, kCFBundleVersionKey);
+                                if (version != NULL) CFRetain(version);
                                 CFRelease(infoPlist);
                             }
                         }
@@ -704,8 +745,8 @@ void printInfoFromURL(CFURLRef url, void *context) {
                         if ( (err = ResError()) != noErr || vers == NULL) {
                             if (err != noErr && err != resNotFound) osstatusexit(err, "unable to read 'vers' 1 resource");
                         } else {
-                            if (appVersion == NULL) { // prefer 'plst' version
-                                appVersion = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
+                            if (version == NULL) { // prefer 'plst' version
+                                version = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
                             }
                             intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
                         }
@@ -716,39 +757,49 @@ void printInfoFromURL(CFURLRef url, void *context) {
                 bundleID = CFBundleGetIdentifier(bundle);
                 if (bundleID != NULL) CFRetain(bundleID);
 		// prefer a short version string, e.g. "1.0 Beta" instead of "51" for Safari
-                appVersion = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleShortVersionString"));
-		if (appVersion == NULL)
-		    appVersion = CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey);
-                if (appVersion != NULL) {
-                    CFRetain(appVersion);
+                version = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleShortVersionString"));
+		if (version == NULL)
+		    version = CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey);
+                if (version != NULL) {
+                    CFRetain(version);
                     intVersion = CFBundleGetVersionNumber(bundle);
                 }
                 CFRelease(bundle);
             }
             if (bundleID != NULL) {
-                CFStringGetCString(bundleID, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
-                printf("\tbundle ID: %s\n", tmpBuffer);
+                printf("\tbundle ID: %s\n", utf8StringFromCFStringRef(bundleID));
                 CFRelease(bundleID);
             }
-            if (appVersion != NULL) {
-                CFStringGetCString(appVersion, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
-                printf("\tversion: %s", tmpBuffer);
-                if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);
-                putchar('\n');
-                CFRelease(appVersion);
-            }
-        }
-        
+        } else {
+	    // try to get a version if we can, but don't complain if we can't
+	    FSRef fsr;
+	    if (CFURLGetFSRef(url, &fsr)) {
+		SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
+		if (ResError() == noErr) {
+		    VersRecHndl vers = (VersRecHndl)Get1Resource('vers', 1);
+		    if (ResError() == noErr && vers != NULL) {
+			version = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
+			intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
+		    }
+		}
+		CloseResFile(resFork);
+	    }
+	}
+	
+	if (version != NULL) {
+	    printf("\tversion: %s", utf8StringFromCFStringRef(version));
+	    if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);
+	    putchar('\n');
+	    CFRelease(version);
+	}
+
         // kind string
         err = LSCopyKindStringForURL(url, &kind);
         if (err != noErr) osstatusexit(err, "unable to get kind of '%s'", strBuffer);
-        CFStringGetCString(kind, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
-        printf("\tkind: %s\n", tmpBuffer);
+        printf("\tkind: %s\n", utf8StringFromCFStringRef(kind));
 	CFRelease(kind);
         printMoreInfoFromURL(url);
     }
-    CFRelease(scheme);
-    CFRelease(pathOrURL);
 }
 
 
@@ -759,7 +810,7 @@ void launchURL(CFURLRef url, ICInstance icInst) {
     OSStatus err;
 
     strBuffer[0] = '\0';
-    CFStringGetCString(urlStr, strBuffer, STRBUF_LEN, CFStringGetSystemEncoding()); // XXX buffer size issues?
+    CFStringGetCString(urlStr, strBuffer, STRBUF_LEN, CFStringGetSystemEncoding()); // XXX no idea what encoding ICLaunchURL is supposed to take; leave as is for now
     strStart = 0;
     strEnd = strlen(strBuffer);
     err = ICLaunchURL(icInst, "\p", strBuffer, strEnd, &strStart, &strEnd);
