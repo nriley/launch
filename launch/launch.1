@@ -1,0 +1,132 @@
+.Dd Wed Oct 22 2003      \" DATE 
+.Dt LAUNCH 1 LOCAL	 \" Program name and manual section number 
+.Os launch 1.0
+.Sh NAME
+.Nm launch
+.Nd find, open, print, or get information about files, folders, disks and URLs
+.Sh SYNOPSIS
+.Nm launch
+.Op Fl npswbmhCX         \" [-npswbmhCX]
+.Op Fl c Ar creator      \" [-c creator]
+.Op Fl i Ar bundleID     \" [-i bundleID]
+.Op Fl u Ar URL          \" [-u URL]
+.Op Fl a Ar name         \" [-a name]
+.Op Ar item ...          \" [item ...]
+.Op Ar -                 \" [-]
+.Nm 
+.Op Fl npflswbmhCX
+.Ar item ...
+.Sh DESCRIPTION
+The
+.Nm
+command is a replacement for Mac OS X's
+.Xr open 1
+command and opens a file (or a folder/directory or URL), as if you had
+double-clicked its icon in the Finder. If no application is specified,
+the default application determined by LaunchServices is used to open
+items.
+.Pp
+.Nm
+invoked with a file or URL argument will open the URL directly or in
+your preferred helper application. Applications can be specified by
+their four-character creators (e.g. 'ToyS') or Java-style bundle ID
+(e.g. com.apple.scripteditor).
+.Pp
+.Nm
+can ask applications to print documents, a feature the OS X Finder is
+still missing.  It can open applications in the background; can open
+multiple copies of applications; can open Carbon applications in
+Classic, or prevent Classic from starting; and can show information
+about any item on disk, including file type, creator, data and
+resource fork sizes, dates, and bundle ID.
+.Pp
+The options to
+.Nm
+are divided in three sections according to purpose. You can give
+.Nm
+a reference to an application in many ways, using the matching
+options. Once
+.Nm
+has identified one or more items, the action options indicate what to
+do with these items. Finally, if the action involves launching an
+application, the launch options allow further customization.
+.Ss Matching options
+.Bl -tag -width -indent
+.It Fl c Ar creator
+Match by creator (a four-character code, also known as a signature).
+.It Fl i Ar bundleID
+Match by bundle identifier, usually consisting of the reversed dot
+(.)-separated components of the application developer's Internet domain
+name, followed by the application name.  For example, the Finder's
+bundle identifier is
+.Ar com.apple.Finder .
+Bundle identifiers are not case-sensitive.
+.It Fl u Ar URL
+Match application at
+.Ar URL
+(which must be a file:// URL).
+.El
+.Pp
+In addition to the above, you can specify applications, documents,
+folders, disks and URLs as item arguments.
+.Ss Action options
+.Bl -tag -width -indent
+.It Fl n
+Print matching paths/URLs instead of opening them.
+.It Fl p
+Ask application(s) to print document(s).
+.It Fl f
+Display information about item(s).
+.It Fl l
+Launch URLs, treating "http://" URLs as Web sites instead of WebDAV
+resources.
+.El
+.Ss Launch options
+.Bl -tag -width -indent
+.It Fl s
+Launch target(s) as superuser, authenticating if needed.
+.It Fl w
+Wait for application to finish opening before exiting.
+.It Fl b
+Launch application in the background.
+.It Fl m
+Launch application again, even if already running.
+.It Fl h
+Hide application after it finishes opening.
+.It Fl C
+Force CFM/PEF Carbon application to open in Classic.
+.It Fl X
+Don't start the Classic environment for this Classic application if
+Classic isn't running.
+.El
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr appswitch 1 ,
+.Xr GetFileInfo 1 ,
+.Xr open 1
+.Sh BUGS              \" Document known, unremedied bugs
+Launching may be very slow on Mac OS X 10.2.8 and earlier; this is an
+acknowledged Mac OS X bug with no known workaround, and may affect
+Apple's
+.Xr open 1
+command as well in certain cases.  It is fixed in Mac OS X 10.3.
+.Pp
+The
+.Fl m
+option may not work well (or at all) before Mac OS X 10.3 because of
+Mac OS X bugs.
+.Pp
+The
+.Fl h
+option requires the
+.Fl b
+option to be used as well, or Cocoa applications will not hide on
+startup.  This is a Mac OS X bug which is still unfixed as of Mac OS X
+10.3.
+.Sh AUTHOR
+.An "Nicholas Riley" Aq launchsw@sabi.net
+.Pp
+This page written in part by
+.An "Hisashi T Fujinaka" Aq htodd@twofifty.com .
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

@@ -1,5 +1,5 @@
-launch 1.0b3 [xx April 2003]
-============
+launch 1.0 [23 October 2003]
+==========
 
 A command-line launcher for Mac OS X in the spirit of open(1).
 
@@ -13,7 +13,7 @@ Apple provides a simple command-line launching program called 'open'
 with Mac OS X.  It offers few options - launching applications by name
 or by path, launching TextEdit, or opening a number of applications,
 documents, folders, or URLs.  With the exception of special support for
-TextEdit, 'launch' does all this and:
+TextEdit (open -a), 'launch' does all this and:
 
 - opens URLs, directly or in your preferred helper application (-l)
 - lets you specify applications by their four-character creator
@@ -26,7 +26,7 @@ TextEdit, 'launch' does all this and:
 - launches applications in the background
 - launches Carbon applications in Classic
 - displays file information including type, creator, bundle ID,
-  data and resource fork sizes, and dates
+  data and resource fork sizes, dates and version
 - reports errors intelligibly
 - and much more!
 
@@ -48,21 +48,22 @@ is in the default path.  You should subsequently be able to use
 'launch' by typing its name.  If you wish to install it somewhere else,
 modify the install line as appropriate.
 
-% sudo /usr/bin/install -d /usr/local/bin
+% sudo /usr/bin/install -d /usr/local/bin /usr/local/man/man1
 % sudo /usr/bin/install -c build/launch /usr/local/bin
+% sudo /usr/bin/install -c launch.1 /usr/local/man/man1
 % rehash
 
 Uninstallation:
 
-% sudo rm -f /usr/local/bin/launch
+% sudo rm -f /usr/local/bin/launch /usr/local/man/man1/appswitch.1
 
 COMPILATION
 -----------
 
-A Project Builder project, 'launch.pbproj', is included.  A
+An Xcode/Project Builder project, 'launch.pbproj', is included.  A
 precompiled binary is also provided.  'launch' was developed and
-tested under Mac OS 10.2.3 with the December 2002 Developer Tools,
-and does not require any additional software to build.
+tested under Mac OS 10.3 with the October 2003 Developer Tools, and
+does not require any additional software to build.
 
 USAGE
 -----
@@ -81,7 +82,7 @@ Some examples:
 [CodeWarrior IDE opens with an untitled document containing the file list]
 
 % launch -i org.mozilla.navigator http://www.apple.com/
-[Chimera Navigator opens Apple's Web site]
+[Camino opens Apple's Web site]
 
 % launch -l launchsw@sabi.net
 [Your preferred email client opens a new message to comment on launch]
@@ -90,9 +91,23 @@ Some examples:
 /Applications/Preview.app: Mac OS X application package 
         type: 'APPL'    creator: 'prvw'
         bundle ID: com.apple.Preview
+        version: 2.1.0
         kind: Application
-        contents: 2 items
+        contents: 1 item
 [...]
+
+A scripting example: a zsh function which provides an OS X wrapper
+around emacsclient and the Carbon build of GNU Emacs, using launch and
+appswitch (another one of my command-line tools).
+
+    e() {
+      ( emacsclient -n $@ >&/dev/null && \
+	appswitch -a Emacs ) || \
+      ( launch -ba Emacs && \
+  	until { emacsclient -n $@ >&/dev/null } do sleep 1; done;
+        appswitch -a Emacs )
+      export EDITOR=emacsclient
+    }
 
 FREQUENTLY ASKED QUESTIONS
 --------------------------
@@ -107,6 +122,7 @@ Type 'launch -f', and drop the OmniWeb icon on Terminal:
 /Applications/Internet/OmniWeb.app: Mac OS X application package 
         type: 'APPL'    creator: 'OWEB'
         bundle ID: com.omnigroup.OmniWeb
+        version: 4.5
         kind: Application
 
 Note that bundle IDs are not case-sensitive: com.barebones.BBEdit is
@@ -118,10 +134,11 @@ Q. Why does application X open a file with a name beginning with
 
 A. Your application does not support stationery.  Applications which
 support stationery respond to it by creating a new untitled document
-with the contents of the stationery.  Most (all?) Cocoa applications,
-such as TextEdit, do not support stationery.  If you're looking for
-a text editor which supports stationery, try BBEdit, Tex-Edit Plus,
-the CodeWarrior IDE, or almost any other Carbon editor.
+with the contents of the stationery.  Most Cocoa applications, such as
+TextEdit, do not support stationery.  (Omni Group applications are a
+notable exception.)  If you're looking for a text editor which
+supports stationery, try BBEdit, Tex-Edit Plus, the CodeWarrior IDE,
+or almost any other Carbon editor.
 
 For the curious: launch processes input by simultaneously reading it
 and writing to a temporary stationery file.  Once reading is complete,
@@ -145,7 +162,10 @@ use:
 % launch -f "`launch -nc 'Doug'`"
 /Volumes/GrayApps/Utilities/Resorcerer 2.4/Resorcerer: scriptable Mac OS X application [Carbon, prefers native OS X]
         type: 'APPL'    creator: 'Doug'
+        bundle ID: com.mathemaesthetics.resorcerer
+        version: 2.4 [0x2418010 = 37847056]
         kind: Application
+[...]
 
 
 Q. Why won't launch locate non-packaged applications by their bundle
@@ -161,14 +181,6 @@ Non-packaged applications usually originated as Mac OS applications,
 so they will have creators.  If you're using Mac OS X 10.1.x, try
 using the creator instead of the bundle ID as a workaround (-c instead
 of -i).
-
-
-Q. Why does launch display '[can't access CFBundle for application]'
-in place of the bundle identifiers of non-packaged applications?
-
-A. This is a CFBundle bug which remains as of Mac OS X 10.2.3.  If
-this matters to you, please ask Apple to fix it, or implement a
-workaround in launch by parsing the 'plst' id 0 resource directly.
 
 
 Q. Why doesn't launch support opening items as root?
@@ -224,10 +236,19 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
-1.0b3 - xx April 2003
+1.0 - 23 October 2003
  - work around CFBundle bug to report bundle identifiers and versions
    from resource forks of unpackaged Carbon applications and Classic
    applications [Lloyd Dupont]
+ - added descriptions for more error codes and clarified error
+   reporting
+ - output all errors to stderr
+ - provide better errors for -X option
+ - restored -m: OS X bug is fixed in Panther
+ - fixed a couple of tiny memory leaks
+ - added man page [Hisashi T Fujinaka]
+ - work around bug in LSOpenFromURLSpec opening multiple items in
+   Mac OS X 10.3
 1.0b2 - 9 March 2003
  - fixed install instructions to create /usr/local/bin if needed
  - show bundle version with text, hex and integer representations

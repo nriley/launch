@@ -3,14 +3,19 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 38;
+	objectVersion = 39;
 	objects = {
 		014CEA490018CE3211CA2923 = {
 			buildRules = (
 			);
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
 				OPTIMIZATION_CFLAGS = "-O0";
+				ZERO_LINK = YES;
 			};
 			isa = PBXBuildStyle;
 			name = Development;
@@ -20,6 +25,8 @@
 			);
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				ZERO_LINK = NO;
 			};
 			isa = PBXBuildStyle;
 			name = Deployment;
@@ -35,9 +42,12 @@
 //033
 //034
 		034768E2FF38A6DC11DB9C8B = {
+			expectedFileType = "compiled.mach-o.executable";
+			fallbackIsa = PBXFileReference;
 			isa = PBXExecutableFileReference;
 			path = launch;
 			refType = 3;
+			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 //030
 //031
@@ -50,6 +60,8 @@
 //083
 //084
 		08FB7793FE84155DC02AAC07 = {
+			buildSettings = {
+			};
 			buildStyles = (
 				014CEA490018CE3211CA2923,
 				014CEA4A0018CE3211CA2923,
@@ -73,6 +85,7 @@
 			isa = PBXGroup;
 			name = launch;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		08FB7795FE84155DC02AAC07 = {
 			children = (
@@ -81,12 +94,15 @@
 			isa = PBXGroup;
 			name = Source;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		08FB7796FE84155DC02AAC07 = {
+			expectedFileType = sourcecode.c.c;
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = main.c;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		08FB779DFE84155DC02AAC07 = {
 			children = (
@@ -98,6 +114,7 @@
 			isa = PBXGroup;
 			name = "External Frameworks and Libraries";
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		08FB779FFE84155DC02AAC07 = {
 			buildPhases = (
@@ -179,10 +196,13 @@
 //093
 //094
 		09AB6884FE841BABC02AAC07 = {
+			expectedFileType = wrapper.framework;
+			fallbackIsa = PBXFileReference;
 			isa = PBXFrameworkReference;
 			name = CoreFoundation.framework;
 			path = /System/Library/Frameworks/CoreFoundation.framework;
 			refType = 0;
+			sourceTree = "<absolute>";
 		};
 		09AB6885FE841BABC02AAC07 = {
 			fileRef = 09AB6884FE841BABC02AAC07;
@@ -207,6 +227,7 @@
 			isa = PBXGroup;
 			name = Products;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 //190
 //191
@@ -219,10 +240,13 @@
 //F53
 //F54
 		F561F49F0139D7DD01AEEDB1 = {
+			expectedFileType = wrapper.framework;
+			fallbackIsa = PBXFileReference;
 			isa = PBXFrameworkReference;
 			name = ApplicationServices.framework;
 			path = /System/Library/Frameworks/ApplicationServices.framework;
 			refType = 0;
+			sourceTree = "<absolute>";
 		};
 		F561F4A00139D7DD01AEEDB1 = {
 			fileRef = F561F49F0139D7DD01AEEDB1;
@@ -231,16 +255,21 @@
 			};
 		};
 		F574340B01B8A47B01AEEDB1 = {
+			expectedFileType = text;
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = VERSION;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		F579CF4B019A1C6D01AEEDB1 = {
+			expectedFileType = wrapper.framework;
+			fallbackIsa = PBXFileReference;
 			isa = PBXFrameworkReference;
 			name = Security.framework;
 			path = /System/Library/Frameworks/Security.framework;
 			refType = 0;
+			sourceTree = "<absolute>";
 		};
 		F579CF4C019A1C6D01AEEDB1 = {
 			fileRef = F579CF4B019A1C6D01AEEDB1;
@@ -249,16 +278,21 @@
 			};
 		};
 		F5C0CA9501B5740C01AEEDB1 = {
+			expectedFileType = text;
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = README;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		F5E819BF0198DFF701AEEDB1 = {
+			expectedFileType = wrapper.framework;
+			fallbackIsa = PBXFileReference;
 			isa = PBXFrameworkReference;
 			name = Carbon.framework;
 			path = /System/Library/Frameworks/Carbon.framework;
 			refType = 0;
+			sourceTree = "<absolute>";
 		};
 		F5E819C00198DFF701AEEDB1 = {
 			fileRef = F5E819BF0198DFF701AEEDB1;

@@ -5,9 +5,10 @@ set -x -v
 cd launch && \
 find . -name \*~ -exec rm '{}' \; && \
 pbxbuild && \ 
-SetFile -c 'R*ch' -t 'TEXT' README VERSION && \
+SetFile -c 'R*ch' -t 'TEXT' README VERSION launch.1 && \
 strip build/launch && \
 sudo /usr/bin/install -c build/launch /usr/local/bin && \
+sudo /usr/bin/install -c launch.1 /usr/local/man/man1 && \
 rm -rf build/launch.build build/intermediates build/.gdb_history && \
 VERSION=`cat VERSION` TARBALL="launch-$VERSION.tar.gz" && \
 DMG="launch-$VERSION.dmg" VOL="launch $VERSION" MOUNTPOINT="/Volumes/$VOL" && \
@@ -30,3 +31,4 @@ tar --exclude=.DS_Store -zchf launch-$VERSION.tar.gz launch-$VERSION && \
 #hdiutil convert $DMG -format UDZO -o z$DMG && \
 #mv z$DMG $DMG && \
 scp $TARBALL ainaz:web/nriley/software/ #$DMG 
+:

@@ -17,11 +17,6 @@
 
 /* To do/think about:
 
-- Do we need to assume -b if -h?  Hiding the foreground app just makes
-it flash (only if Cocoa?)
-
-- Does -X work at all?  What does it return if it fails?
-
 - Launching as root: use authentication framework - doesn't work.
 
 - launch URL with specified URL handler (done, except for IC)
@@ -36,9 +31,9 @@ Thanks to:
 
 */
 
-#define DEBUG 1
+/* #define DEBUG 1 */
 #define BROKEN_AUTHORIZATION 1
-#define BROKEN_LAUNCHNEWINSTANCE 1
+#define BROKEN_LSOPENFROMURLSPEC 1
 #define kComponentSignatureString "launch"
 
 #include <unistd.h>
@@ -55,7 +50,7 @@ Thanks to:
 
 const char *APP_NAME;
 
-#define VERSION "1.0b3"
+#define VERSION "1.0"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -89,6 +84,8 @@ static errList ERRS = {
     { kLSApplicationNotFoundErr, "application not found" },
     { kLSLaunchInProgressErr, "application is being opened; please try again after the application is open" },
     { kLSNotRegisteredErr, "application not registered in Launch Services database" },
+    { kLSNoExecutableErr, "application package contains no executable, or an unusable executable" },
+    { kLSNoClassicEnvironmentErr, "Classic environment required but not available" },
 #ifndef BROKEN_AUTHORIZATION
     // Security framework errors
     { errAuthorizationDenied, "authorization denied" },
@@ -101,6 +98,7 @@ static errList ERRS = {
     // Misc. errors
     { procNotFound, "unable to connect to system service.\nAre you logged in?" },
     { kCGErrorIllegalArgument, "window server error.\nAre you logged in?" },
+    { kCGErrorApplicationRequiresNewerSystem, "application requires a newer Mac OS X version" },
     { fnfErr, "file not found" },
     { 0, NULL }
 };
@@ -118,9 +116,7 @@ void usage() {
 #endif
         "  -w            wait for application to finish opening before exiting\n"
         "  -b            launch application in the background\n"
-#ifndef BROKEN_LAUNCHNEWINSTANCE
         "  -m            launch application again, even if already running\n"
-#endif
         "  -h            hide application once it's finished opening\n"
         "  -C            force CFM/PEF Carbon application to launch in Classic\n"
         "  -X            don't start Classic for this app if Classic isn't running\n"
@@ -253,7 +249,9 @@ CFURLRef normalizedURLFromString(CFStringRef str) {
             if (scheme == NULL) {
                 CFRelease(url);
                 url = NULL;
-            }
+            } else {
+	        CFRelease(scheme);
+	    }
         }
     }
     return url;
@@ -381,11 +379,7 @@ void getargs(int argc, char * const argv[]) {
 #endif
         case 'w': LSPEC.launchFlags ^= kLSLaunchAsync; break;      // synchronous
         case 'b': LSPEC.launchFlags |= kLSLaunchDontSwitch; break; // open in background
-#ifdef BROKEN_LAUNCHNEWINSTANCE
-        case 'm': errexit("-m option not functional (LaunchServices bug?), sorry");
-#else
         case 'm': LSPEC.launchFlags |= kLSLaunchNewInstance; break;// open multiple
-#endif
         case 'h': LSPEC.launchFlags |= kLSLaunchAndHide; break;    // hide once launched
         case 'C': LSPEC.launchFlags |= kLSLaunchInClassic; break;  // force Classic
         case 'X': LSPEC.launchFlags ^= kLSLaunchStartClassic; break;// don't start Classic for app
@@ -418,6 +412,7 @@ void getargs(int argc, char * const argv[]) {
 		    LSPEC.appURL = absURL;
 		    if (scheme == NULL || !CFEqual(scheme, CFSTR("file")))
 			errexit("invalid file:// URL (argument of -u)");
+		    CFRelease(scheme);
 		}
 	    }
 	    appSpecified = true;
@@ -500,12 +495,11 @@ void getargs(int argc, char * const argv[]) {
     }
 }
 
-// 'context' is to match prototype for CFArrayApplierFunction, it's unused
-void printPathFromURL(CFURLRef url, void *context) {
+void printPathFromURL(CFURLRef url, FILE *stream) {
     CFStringRef scheme, pathOrURL;
     static char strBuffer[STRBUF_LEN];
     
-    check(url != NULL && context == NULL);
+    check(url != NULL && stream != NULL);
 
     scheme = CFURLCopyScheme(url);
     
@@ -516,7 +510,7 @@ void printPathFromURL(CFURLRef url, void *context) {
 
     strBuffer[0] = '\0';
     CFStringGetCString(pathOrURL, strBuffer, STRBUF_LEN, CFStringGetSystemEncoding()); // XXX buffer size issues?
-    printf("%s\n", strBuffer);
+    fprintf(stream, "%s\n", strBuffer);
     CFRelease(scheme);
     CFRelease(pathOrURL);
 }
@@ -699,7 +693,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
                                 // mimic CFBundle logic below
                                 bundleID = CFDictionaryGetValue(infoPlist, kCFBundleIdentifierKey);
                                 if (bundleID != NULL) CFRetain(bundleID);
-                                CFStringRef appVersion = CFDictionaryGetValue(infoPlist, CFSTR("CFBundleShortVersionString"));
+                                appVersion = CFDictionaryGetValue(infoPlist, CFSTR("CFBundleShortVersionString"));
                                 if (appVersion == NULL)
                                     appVersion = CFDictionaryGetValue(infoPlist, kCFBundleVersionKey);
                                 if (appVersion != NULL) CFRetain(appVersion);
@@ -722,11 +716,13 @@ void printInfoFromURL(CFURLRef url, void *context) {
                 bundleID = CFBundleGetIdentifier(bundle);
                 if (bundleID != NULL) CFRetain(bundleID);
 		// prefer a short version string, e.g. "1.0 Beta" instead of "51" for Safari
-		CFStringRef appVersion = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleShortVersionString"));
+                appVersion = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleShortVersionString"));
 		if (appVersion == NULL)
 		    appVersion = CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey);
-		if (appVersion != NULL)
+                if (appVersion != NULL) {
+                    CFRetain(appVersion);
                     intVersion = CFBundleGetVersionNumber(bundle);
+                }
                 CFRelease(bundle);
             }
             if (bundleID != NULL) {
@@ -748,6 +744,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
         if (err != noErr) osstatusexit(err, "unable to get kind of '%s'", strBuffer);
         CFStringGetCString(kind, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
         printf("\tkind: %s\n", tmpBuffer);
+	CFRelease(kind);
         printMoreInfoFromURL(url);
     }
     CFRelease(scheme);
@@ -771,6 +768,57 @@ void launchURL(CFURLRef url, ICInstance icInst) {
     }
     
     CFRelease(urlStr);
+}
+
+OSStatus openFromURLSpec() {
+#ifndef BROKEN_LSOPENFROMURLSPEC
+    return LSOpenFromURLSpec(&LSPEC, NULL);
+#else
+    LSLaunchFSRefSpec spec = {NULL, 0, NULL, LSPEC.passThruParams,
+			      LSPEC.launchFlags, LSPEC.asyncRefCon};
+    CFIndex urlIndex, urlCount = LSPEC.itemURLs ? CFArrayGetCount(LSPEC.itemURLs) : 0;
+    FSRef *itemRefs = malloc(urlCount * sizeof(FSRef));
+    CFURLRef url;
+    CFStringRef scheme, fileScheme = CFSTR("file");
+    int itemIndex = 0;
+    OSStatus err;
+
+    for (urlIndex = 0 ; urlIndex < urlCount ; urlIndex++) {
+	url = CFArrayGetValueAtIndex(LSPEC.itemURLs, urlIndex);
+	scheme = CFURLCopyScheme(url);
+	if (CFEqual(scheme, fileScheme)) {
+	    if (CFURLGetFSRef(url, &itemRefs[itemIndex])) {
+		itemIndex++;
+		CFArrayRemoveValueAtIndex((CFMutableArrayRef)LSPEC.itemURLs, urlIndex);
+		urlIndex--;
+		urlCount--;
+	    } else {
+		fprintf(stderr, "%s: unable to locate: ", APP_NAME);
+		printPathFromURL(url, stderr);
+	    }
+	}
+        CFRelease(scheme);
+    }
+
+    if (urlCount > 0 || itemIndex == 0) { /* URLs, or no items */
+	err = LSOpenFromURLSpec(&LSPEC, NULL);
+	if (err != noErr)
+	    return err;
+    }
+    if (itemIndex > 0) {
+        FSRef appRef;
+	spec.numDocs = itemIndex;
+	spec.itemRefs = itemRefs;
+	if (LSPEC.appURL != NULL) {
+	    if (!CFURLGetFSRef(LSPEC.appURL, &appRef)) {
+		errexit("can't find application");
+	    }
+            spec.appRef = &appRef;
+	}
+	return LSOpenFromRefSpec(&spec, NULL);
+    }
+    return noErr;
+#endif
 }
 
 int main (int argc, char * const argv[]) {
@@ -797,18 +845,18 @@ int main (int argc, char * const argv[]) {
     
     switch (OPTS.action) {
     case ACTION_FIND:
-	printPathFromURL(LSPEC.appURL, NULL);
+	printPathFromURL(LSPEC.appURL, stdout);
 	break;
     case ACTION_OPEN:
-	err = LSOpenFromURLSpec(&LSPEC, NULL);
+	err = openFromURLSpec();
 	if (err != noErr) osstatusexit(err, "can't open application", argv[1]);
 	break;
     case ACTION_FIND_ITEMS:
         CFArrayApplyFunction(LSPEC.itemURLs, CFRangeMake(0, CFArrayGetCount(LSPEC.itemURLs)),
-			     (CFArrayApplierFunction) printPathFromURL, NULL);
+			     (CFArrayApplierFunction) printPathFromURL, stdout);
 	break;
     case ACTION_OPEN_ITEMS:
-	err = LSOpenFromURLSpec(&LSPEC, NULL);
+	err = openFromURLSpec();
 	if (err != noErr) osstatusexit(err, "can't open items", argv[1]);
 	break;
     case ACTION_INFO_ITEMS:
@@ -818,7 +866,7 @@ int main (int argc, char * const argv[]) {
     case ACTION_LAUNCH_URLS:
     {
         ICInstance icInst;
-        err = ICStart(&icInst, '????');
+        err = ICStart(&icInst, '\?\?\?\?'); // in case GCC trigraph handling is enabled
         if (err != noErr) osstatusexit(err, "can't initialize Internet Config", argv[1]);
         CFArrayApplyFunction(LSPEC.itemURLs, CFRangeMake(0, CFArrayGetCount(LSPEC.itemURLs)),
                              (CFArrayApplierFunction) launchURL, icInst);
