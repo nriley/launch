@@ -1,4 +1,4 @@
-launch 1.0b1 [14 December 2002]
+launch 1.0b2 [9 March 2003]
 ============
 
 A command-line launcher for Mac OS X in the spirit of open(1).
@@ -48,6 +48,7 @@ is in the default path.  You should subsequently be able to use
 'launch' by typing its name.  If you wish to install it somewhere else,
 modify the install line as appropriate.
 
+% sudo /usr/bin/install -d /usr/local/bin
 % sudo /usr/bin/install -c build/launch /usr/local/bin
 % rehash
 
@@ -223,6 +224,9 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
+1.0b2 - 9 March 2003
+ - fixed install instructions to create /usr/local/bin if needed
+ - show bundle version with text, hex and integer representations
 1.0b1 - 14 December 2002
  - accept "slack" (default http) URLs and email addresses with -l
  - accept input from stdin with '-'

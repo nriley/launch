@@ -2,7 +2,7 @@
  launch - a smarter 'open' replacement
  Nicholas Riley <launchsw@sabi.net>
 
- Copyright (c) 2002, Nicholas Riley
+ Copyright (c) 2001-03, Nicholas Riley
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -55,7 +55,7 @@ Thanks to:
 
 const char *APP_NAME;
 
-#define VERSION "1.0b1"
+#define VERSION "1.0b2"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -100,7 +100,7 @@ static errList ERRS = {
     { icInternalErr, "internal Internet Config error" },
     // Misc. errors
     { procNotFound, "unable to connect to system service.\nAre you logged in?" },
-    { 1001, "SystemConfiguration nonspecific failure.\nAre you logged in?" },
+    { kCGErrorIllegalArgument, "window server error.\nAre you logged in?" },
     { fnfErr, "file not found" },
     { 0, NULL }
 };
@@ -130,7 +130,7 @@ void usage() {
         "  -a name       match application by name (NOT RECOMMENDED, very fragile)\n"
         "'document' may be a file, folder, or disk - whatever the application can open.\n"
         "'item' may be a file, folder, disk, or URL.\n\n");
-    fprintf(stderr, "launch "VERSION" (c) 2001-02 Nicholas Riley <http://web.sabi.net/nriley/software/>.\n"
+    fprintf(stderr, "launch "VERSION" (c) 2001-03 Nicholas Riley <http://web.sabi.net/nriley/software/>.\n"
 	            "Please send bugs, suggestions, etc. to <launchsw@sabi.net>.\n");
 
     exit(1);
@@ -677,6 +677,17 @@ void printInfoFromURL(CFURLRef url, void *context) {
                     CFStringGetCString(bundleID, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
                     printf("\tbundle ID: %s\n", tmpBuffer);
                 }
+		// prefer a short version string, e.g. "1.0 Beta" instead of "51" for Safari
+		CFStringRef appVersion = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleShortVersionString"));
+		if (appVersion == NULL)
+		    appVersion = CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey);
+		if (appVersion != NULL) {
+                    UInt32 intVersion = CFBundleGetVersionNumber(bundle);
+                    CFStringGetCString(appVersion, tmpBuffer, STRBUF_LEN, CFStringGetSystemEncoding());
+                    printf("\tversion: %s", tmpBuffer);
+                    if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);
+                    putchar('\n');
+		}
                 CFRelease(bundle);
             }
         }
