@@ -1,0 +1,207 @@
+launch 1.0a9 [2 April 2002]
+============
+
+A command-line launcher for Mac OS X in the spirit of open(1).
+
+Written by Nicholas Riley <mailto:launchsw@sabi.net>.
+Obtain updates from <http://web.sabi.net/nriley/software/>.
+
+WHAT IS IT?
+-----------
+
+Apple provides a simple command-line launching program called 'open'
+with Mac OS X.  It offers few options - launching applications by name
+or by path, launching TextEdit, or opening a number of applications,
+documents, folders, etc.  With the exception of special support for
+TextEdit, 'launch' does all this and:
+
+- opens URLs, directly or in your preferred helper application (-l)
+- lets you specify applications by their four-character creator
+  (e.g. 'ToyS') or Java-style bundle ID (e.g. com.apple.scripteditor),
+  both of which allow you to move or rename an application without
+  changing references to it
+- asks applications to print documents, something the OS X Finder
+  no longer permits
+- launches applications in the background
+- launches Carbon applications in Classic
+- displays file information including type, creator, bundle ID,
+  data and resource fork sizes, and dates
+- reports errors intelligibly
+- and much more!
+
+'launch' is useful by itself, but is even better when used in scripts.
+Assign a shell command to your favorite Mac OS text, graphics or
+resource editor.  Go to your favorite Web site with a few keystrokes.
+
+Like 'open', 'launch' provides one half of the round-trip between
+Terminal.app and the Finder.  You can drag and drop icons or proxy icons
+into Terminal.app to insert their paths into command lines.  To go in the
+other direction, just type 'launch .' (or 'open .') to open a Finder window
+showing the current directory.
+
+INSTALLATION
+------------
+
+The commands below install the 'launch' tool in /usr/local/bin, which
+is in the default path.  You should subsequently be able to use
+'launch' by typing its name.  If you wish to install it somewhere else,
+modify the install line as appropriate.
+
+% sudo /usr/bin/install -c build/launch /usr/local/bin
+% rehash
+
+Uninstallation:
+
+% sudo rm -f /usr/local/bin/launch
+
+COMPILATION
+-----------
+
+A Project Builder project, 'launch.pbproj', is included.  A
+precompiled binary is also provided.  'launch' was developed and
+tested under Mac OS 10.1 and 10.1.1 with the 10.1 Developer Tools, and
+does not require any additional software to build.
+
+USAGE
+-----
+
+Just type 'launch' by itself to receive usage information.
+
+Some examples:
+
+% launch -ni com.apple.iTunes
+/Applications/iTunes.app
+[hint, hint]
+
+% launch -c 'R*ch'
+[BBEdit opens]
+                                
+% launch -pbc 'R*ch' test.txt
+[BBEdit starts printing test.txt in the background]
+
+% launch -l http://www.apple.com/
+[Your preferred Web browser opens Apple's Web site]
+
+/Applications/Preview.app: Mac OS X application package 
+        type: 'APPL'    creator: 'prvw'
+        bundle ID: com.apple.Preview
+        kind: Application
+        contents: 2 items
+[...]
+
+FREQUENTLY ASKED QUESTIONS
+--------------------------
+
+Q. How do I discover bundle IDs for applications?
+
+A. The -f option to launch can help.  Say you have OmniWeb in the
+/Applications/Internet folder, and want to find out its bundle ID.
+Type 'launch -f', and drop the OmniWeb icon on Terminal:
+
+% launch -f /Applications/Internet/OmniWeb.app
+/Applications/Internet/OmniWeb.app: Mac OS X application package 
+        type: 'APPL'    creator: 'OWEB'
+        bundle ID: com.omnigroup.OmniWeb
+        kind: Application
+
+Note that bundle IDs are not case-sensitive: com.barebones.BBEdit is
+the same as com.barebones.bbedit.
+
+
+Q. Why can't I use -f with -c to get info on an application with a
+given creator?
+
+A. This feature may be added to a later version (or add it yourself!),
+but there is a workaround.  Instead of:
+
+% launch -f -c 'Doug'
+launch: can't get information (-f) on item(s) using an application (-u, -c, -i, -a)
+
+use:
+
+% launch -f "`launch -nc 'Doug'`"
+/Volumes/GrayApps/Utilities/Resorcerer 2.4/Resorcerer: scriptable Mac OS X application [Carbon, prefers native OS X]
+        type: 'APPL'    creator: 'Doug'
+        kind: Application
+
+
+Q. Why do bundle IDs not work for non-packaged applications?
+
+A. I think this is a LaunchServices/CFBundle bug.  For example, BBEdit
+6.1 for OS X was a packaged application; BBEdit 6.5 is not, however its
+'plst' resource contains a bundle ID.  LaunchServices is unable to
+locate BBEdit 6.5 by its bundle ID.
+
+Non-packaged applications usually come from older Mac OS applications,
+so they will have creators, which is a workaround (use -c instead of
+-i).
+
+
+Q. Why doesn't launch support opening items as root?
+
+A. Apple eliminated this capability with the Mac OS X 10.1 Security
+Update.  If at some point Apple restores this capability, 'launch'
+will be ready to support it.
+
+
+Q. Why do I get an error -600?
+
+A. A typical occurrence of this would be:
+
+% launch -n .
+launch: can't open items: unable to connect to system service.
+Are you logged in? (-600)
+
+In order to perform certain operations, launch needs to talk to
+various system services owned by the currently logged-on user.  If you
+aren't using 'launch' from a terminal currently logged into the Mac OS
+X GUI, certain operations may not work.  Try opening Terminal.app,
+creating a new terminal, and trying again.
+
+Another possibility is to create your own interprocess messaging.
+For example, place this script in a file:
+
+#!/bin/sh
+PIPE=/tmp/.launchpipe
+[ -e $PIPE ] || mkfifo $PIPE
+while true; do
+    read opts < $PIPE
+    eval "/path/to/launch $opts" & # change this to launch's path
+done
+
+Then, define a function or alias.  For zsh:
+
+rlaunch() { echo $@ > /tmp/.launchpipe }
+
+Or for tcsh:
+
+alias rlaunch 'echo \!* > /tmp/.launchpipe'
+
+Start the shell script above from the console, then you can use
+'rlaunch' in place of 'launch' logged in from anywhere else.
+
+Thanks to robert <robert@allyourbass.org> for this suggestion.
+
+COMMENTS, SUGGESTIONS, BUG REPORTS, ETC.
+----------------------------------------
+
+Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
+
+VERSION HISTORY
+---------------
+
+1.0a9 - 2 April 2002 - license, comments changes
+1.0a8 - 29 March 2002 - errors with -l (from ICeCoffEE), added rlaunch script
+1.0a7 - 3 March 2002 - print dates, sizes, folder valence, locked status for -f,
+                       don't abort on failure to obtain bundle information
+1.0a6 - 30 November 2001 - fixed incorrect messages, broken -u and crash on -nu
+1.0a5 - 28 November 2001 - print kind string for -f, still no new installer
+1.0a4 - 20 November 2001 - [try to] use Installer VISE instead of InstallAnywhere
+1.0a3 - 15 November 2001 - fixed package identification in -f, updated examples
+1.0a2 - 15 November 2001 - -f, removed broken -m
+1.0a1 - 14 November 2001 - renamed from "FindApp", launch by default, -u
+1.0d5 - 7 November 2001 - option -s for launching as root [nonfunctional]
+1.0d4 - 6 November 2001 - URL launching and Internet Config support
+1.0d3 - 4 November 2001 - more robust, support for docs without app
+1.0d2 - 4 November 2001 - options -opsbmhCX, -cin, documents
+1.0d1 - 26 August 2001 - returns path of application identified by creator
