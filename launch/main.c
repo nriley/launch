@@ -84,8 +84,8 @@ static errList ERRS = {
     { kLSApplicationNotFoundErr, "application not found" },
     { kLSLaunchInProgressErr, "application is being opened; please try again after the application is open" },
     { kLSNotRegisteredErr, "application not registered in Launch Services database" },
-    { kLSNoExecutableErr, "application package contains no executable, or an unusable executable" },
-    { kLSNoClassicEnvironmentErr, "Classic environment required but not available" },
+    { -10827, "application package contains no executable, or an unusable executable" }, /* kLSNoExecutableErr, not defined in 10.2 */
+    { -10828, "Classic environment required but not available" }, /* kLSNoClassicEnvironmentErr, not defined in 10.2 */
 #ifndef BROKEN_AUTHORIZATION
     // Security framework errors
     { errAuthorizationDenied, "authorization denied" },

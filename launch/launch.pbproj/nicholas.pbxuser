@@ -16,7 +16,7 @@
 		);
 		perUserDictionary = {
 			PBXConfiguration.PBXFileTableDataSource3.PBXErrorsWarningsDataSource = {
-				PBXFileTableDataSourceColumnSortingDirectionKey = -1;
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
 				PBXFileTableDataSourceColumnSortingKey = PBXErrorsWarningsDataSource_LocationID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					20,
@@ -42,7 +42,7 @@
 				);
 			};
 			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
-				PBXFileTableDataSourceColumnSortingDirectionKey = -1;
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
 				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					20,
@@ -75,7 +75,7 @@
 					PBXFindDataSource_LocationID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 88634057;
+			PBXPerProjectTemplateStateSaveDate = 88649579;
 			PBXWorkspaceContents = (
 				{
 					PBXProjectWorkspaceModule_StateKey_Rev36 = {
@@ -276,7 +276,7 @@
 				Frame = "{{0, 0}, {517, 227}}";
 				WindowFrame = "{{723, 149}, {517, 249}}";
 			};
-			PBXWorkspaceStateSaveDate = 88634057;
+			PBXWorkspaceStateSaveDate = 88649579;
 		};
 		perUserProjectItems = {
 			E103506B05355596002A18D1 = E103506B05355596002A18D1;
@@ -301,9 +301,9 @@
 	};
 	08FB7796FE84155DC02AAC07 = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {559, 13579}}";
-			sepNavSelRange = "{33212, 0}";
-			sepNavVisRect = "{{0, 12355}, {559, 169}}";
+			sepNavIntBoundsRect = "{{0, 0}, {578, 13369}}";
+			sepNavSelRange = "{3507, 26}";
+			sepNavVisRect = "{{0, 996}, {578, 654}}";
 			sepNavWindowFrame = "{{265, 76}, {725, 703}}";
 		};
 	};
@@ -367,11 +367,6 @@
 		path = /System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFURL.h;
 		refType = 0;
 		sourceTree = "<absolute>";
-		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {554, 6019}}";
-			sepNavSelRange = "{18538, 58}";
-			sepNavVisRect = "{{0, 5362}, {554, 654}}";
-		};
 	};
 	E11E9B950544EE9700045D4F = {
 		isa = PBXFileReference;
@@ -387,11 +382,6 @@
 		path = /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Headers/LSOpen.h;
 		refType = 0;
 		sourceTree = "<absolute>";
-		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {578, 3891}}";
-			sepNavSelRange = "{2548, 27}";
-			sepNavVisRect = "{{0, 856}, {578, 654}}";
-		};
 	};
 	E1375C530530898300FE8BF8 = {
 		fRef = E1375C5C0530898300FE8BF8;
@@ -472,7 +462,7 @@
 		isa = PBXTextBookmark;
 		name = "handle URL/file arguments";
 		rLen = 0;
-		rLoc = 17894;
+		rLoc = 17962;
 		rType = 0;
 		vrLen = 1773;
 		vrLoc = 14523;
@@ -520,7 +510,7 @@
 		isa = PBXTextBookmark;
 		name = "main.c: 805";
 		rLen = 5;
-		rLoc = 33076;
+		rLoc = 33144;
 		rType = 0;
 		vrLen = 1438;
 		vrLoc = 31911;
@@ -540,7 +530,7 @@
 		isa = PBXTextBookmark;
 		name = "main.c: 805";
 		rLen = 0;
-		rLoc = 33089;
+		rLoc = 33157;
 		rType = 0;
 		vrLen = 1436;
 		vrLoc = 31909;
@@ -557,7 +547,7 @@
 		isa = PBXTextBookmark;
 		name = "main.c: 809";
 		rLen = 0;
-		rLoc = 33212;
+		rLoc = 33280;
 		rType = 0;
 		vrLen = 325;
 		vrLoc = 33020;
