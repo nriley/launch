@@ -13,7 +13,7 @@ Apple provides a simple command-line launching program called 'open'
 with Mac OS X.  It offers few options - launching applications by name
 or by path, launching TextEdit, or opening a number of applications,
 documents, folders, or URLs.  With the exception of special support for
-TextEdit (open -a), 'launch' does all this and:
+TextEdit (open -e), 'launch' does all this and:
 
 - opens URLs, directly or in your preferred helper application (-l)
 - lets you specify applications by their four-character creator
@@ -21,7 +21,7 @@ TextEdit (open -a), 'launch' does all this and:
   both of which allow you to move or rename an application without
   changing references to it
 - asks applications to print documents, something the OS X Finder
-  no longer permits
+  didn't get until Mac OS X 10.4
 - allows you to pipe output to GUI applictions
 - launches applications in the background
 - launches Carbon applications in Classic
@@ -60,10 +60,10 @@ Uninstallation:
 COMPILATION
 -----------
 
-An Xcode/Project Builder project, 'launch.pbproj', is included.  A
-precompiled binary is also provided.  'launch' was developed and
-tested under Mac OS 10.3.8 with Xcode 1.5, and does not require any
-additional software to build.
+An Xcode project, 'launch.xcodeproj', is included.  A precompiled Universal
+binary is also provided.  'launch' was developed and tested under Mac OS X 
+10.4.5 with Xcode 2.2.1, and does not require any additional software to
+build.
 
 USAGE
 -----
@@ -81,7 +81,7 @@ Some examples:
 % ls -l | launch -c CWIE -
 [CodeWarrior IDE opens with an untitled document containing the file list]
 
-% launch -i org.mozilla.navigator http://www.apple.com/
+% launch -i org.mozilla.camino http://www.apple.com/
 [Camino opens Apple's Web site]
 
 % launch -l launchsw@sabi.net
@@ -168,21 +168,6 @@ use:
 [...]
 
 
-Q. Why won't launch locate non-packaged applications by their bundle
-identifier?
-
-A. This was a LaunchServices/CFBundle bug, fixed in Mac OS X 10.2.
-For example, BBEdit 6.1 for OS X was a packaged application; BBEdit
-6.5 is not, however its 'plst' resource contains a bundle ID.
-LaunchServices prior to OS X 10.2 was unable to locate BBEdit 6.5 by
-its bundle ID.
-
-Non-packaged applications usually originated as Mac OS applications,
-so they will have creators.  If you're using Mac OS X 10.1.x, try
-using the creator instead of the bundle ID as a workaround (-c instead
-of -i).
-
-
 Q. Why doesn't launch support opening items as root?
 
 A. Apple eliminated this capability with the Mac OS X 10.1 Security
@@ -236,6 +221,11 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
+1.1 - unreleased
+ - -o: pass command-line arguments (broken, r. 4474993)
+ - display content type ID (UTI)    
+ - switched to new LSOpen APIs (now requires Mac OS X 10.4 or later)
+ - for compatibility with open(1), take app path as argument to -a
 1.0.1 - 3 April 2005
  - prefer files to URLs; added -U for old behavior
  - don't display extraneous leading './' on file paths

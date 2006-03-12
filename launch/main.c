@@ -2,7 +2,7 @@
  launch - a smarter 'open' replacement
  Nicholas Riley <launchsw@sabi.net>
 
- Copyright (c) 2001-05, Nicholas Riley
+ Copyright (c) 2001-06, Nicholas Riley
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -15,25 +15,7 @@
  
 */
 
-/* To do/think about:
-
-- Launching as root: use authentication framework - doesn't work.
-
-- launch URL with specified URL handler (done, except for IC)
-
-- launch apps by IC protocol handler (esp. editor)
-
-Thanks to:
-
-- Nat Irons, for encouragement and suggestions
-
-- Brian Hill, for the great Security.framework tutorial and sample code
-
-*/
-
-/* #define DEBUG 1 */
 #define BROKEN_AUTHORIZATION 1
-#define BROKEN_LSOPENFROMURLSPEC 1
 #define kComponentSignatureString "launch"
 
 #include <unistd.h>
@@ -50,7 +32,7 @@ Thanks to:
 
 const char *APP_NAME;
 
-#define VERSION "1.0.1"
+#define VERSION "1.1d1"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -70,7 +52,9 @@ struct {
 
 #define DEFAULT_LAUNCH_FLAGS (kLSLaunchNoParams | kLSLaunchStartClassic | kLSLaunchAsync)
 
-LSLaunchURLSpec LSPEC = {NULL, NULL, NULL, DEFAULT_LAUNCH_FLAGS, NULL};
+LSApplicationParameters LPARAMS = {0, DEFAULT_LAUNCH_FLAGS, NULL, NULL, NULL, NULL, NULL};
+CFArrayRef ITEMS = NULL;
+FSRef APPLICATION;
 
 char *TEMPFILE = NULL;
 
@@ -85,9 +69,9 @@ static errList ERRS = {
     { kLSApplicationNotFoundErr, "application not found" },
     { kLSLaunchInProgressErr, "application is being opened; please try again after the application is open" },
     { kLSNotRegisteredErr, "application not registered in Launch Services database" },
-    { -10827, "application package contains no executable, or an unusable executable" }, /* kLSNoExecutableErr, not defined in 10.2 */
-    { -10828, "Classic environment required but not available" }, /* kLSNoClassicEnvironmentErr, not defined in 10.2 */
-    { -10829, "unable to launch multiple instances of application" }, /* kLSMultipleSessionsNotSupportedErr, not defined in 10.2 */
+    { kLSNoExecutableErr, "application package contains no executable, or an unusable executable" },
+    { kLSNoClassicEnvironmentErr, "Classic environment required but not available" },
+    { kLSMultipleSessionsNotSupportedErr, "unable to launch multiple instances of application" },
 #ifndef BROKEN_AUTHORIZATION
     // Security framework errors
     { errAuthorizationDenied, "authorization denied" },
@@ -107,8 +91,8 @@ static errList ERRS = {
 };
 
 void usage() {
-    fprintf(stderr, "usage: %s [-npswbmhCXU] [-c creator] [-i bundleID] [-u URL] [-a name] [item ...] [-]\n"
-                    "   or: %s [-npflswbmhCXU] item ...\n", APP_NAME, APP_NAME);
+    fprintf(stderr, "usage: %s [-npswbmhCXU] [-c creator] [-i bundleID] [-u URL] [-a name] [-o argument] [item ...] [-]\n"
+                    "   or: %s [-npflswbmhCXU] [-o argument] item ...\n", APP_NAME, APP_NAME);
     fprintf(stderr,
         "  -n            print matching paths/URLs instead of opening them\n"
         "  -p            ask application(s) to print document(s)\n"
@@ -127,10 +111,11 @@ void usage() {
         "  -c creator    match application by four-character creator code ('ToyS')\n"
         "  -i bundle ID  match application by bundle identifier (com.apple.scripteditor)\n"
         "  -u URL        open application at file:// URL (NOT RECOMMENDED for scripts)\n"
-        "  -a name       match application by name (NOT RECOMMENDED, very fragile)\n"
+        "  -a name|path  match application by name/path (NOT RECOMMENDED, very fragile)\n"
+        "  -o argument   pass argument to application (may be specified more than once)\n"
         "'document' may be a file, folder, or disk - whatever the application can open.\n"
         "'item' may be a file, folder, disk, or URL.\n\n");
-    fprintf(stderr, "launch "VERSION" (c) 2001-05 Nicholas Riley <http://web.sabi.net/nriley/software/>.\n"
+    fprintf(stderr, "launch "VERSION" (c) 2001-06 Nicholas Riley <http://web.sabi.net/nriley/software/>.\n"
 	            "Please send bugs, suggestions, etc. to <launchsw@sabi.net>.\n");
 
     exit(1);
@@ -287,7 +272,7 @@ char *tempFile(int *fd) {
     if ( (*fd = mkstemp(tempPath)) == -1)
         errexit("can't create temporary file '%s'", tempPath);
     // mark file as stationery
-    err = FSPathMakeRef(tempPath, &fsr, NULL);
+    err = FSPathMakeRef((UInt8 *)tempPath, &fsr, NULL);
     if (err != noErr) osstatusexit(err, "can't find '%s'", tempPath);
     err = FSGetCatalogInfo(&fsr, kFSCatInfoFinderInfo, &catalogInfo, NULL, NULL, NULL);
     if (err != noErr) osstatusexit(err, "can't get information for '%s'", tempPath);
@@ -340,11 +325,12 @@ void getargs(int argc, char * const argv[]) {
     extern char *optarg;
     extern int optind;
     int ch;
+    OSStatus err;
     Boolean appSpecified = false;
 
     if (argc == 1) usage();
     
-    while ( (ch = getopt(argc, argv, "npflswbmhCXUc:i:u:a:")) != -1) {
+    while ( (ch = getopt(argc, argv, "npflswbmhCXUc:i:u:a:o:")) != -1) {
         switch (ch) {
         case 'n':
             if (OPTS.action != ACTION_DEFAULT) errexit("choose only one of -n, -p, -f, -l options");
@@ -353,7 +339,7 @@ void getargs(int argc, char * const argv[]) {
         case 'p':
             if (OPTS.action != ACTION_DEFAULT) errexit("choose only one of -n, -p, -f, -l options");
             OPTS.action = ACTION_OPEN;
-            LSPEC.launchFlags |= kLSLaunchAndPrint;
+            LPARAMS.flags |= kLSLaunchAndPrint;
             break;
         case 'f':
             if (OPTS.action != ACTION_DEFAULT) errexit("choose only one of -n, -p, -f, -l options");
@@ -381,12 +367,12 @@ void getargs(int argc, char * const argv[]) {
             exit(0); // XXX exit status propagate?
         }
 #endif
-        case 'w': LSPEC.launchFlags ^= kLSLaunchAsync; break;      // synchronous
-        case 'b': LSPEC.launchFlags |= kLSLaunchDontSwitch; break; // open in background
-        case 'm': LSPEC.launchFlags |= kLSLaunchNewInstance; break;// open multiple
-        case 'h': LSPEC.launchFlags |= kLSLaunchAndHide; break;    // hide once launched
-        case 'C': LSPEC.launchFlags |= kLSLaunchInClassic; break;  // force Classic
-        case 'X': LSPEC.launchFlags ^= kLSLaunchStartClassic; break;// don't start Classic for app
+        case 'w': LPARAMS.flags ^= kLSLaunchAsync; break;      // synchronous
+        case 'b': LPARAMS.flags |= kLSLaunchDontSwitch; break; // open in background
+        case 'm': LPARAMS.flags |= kLSLaunchNewInstance; break;// open multiple
+        case 'h': LPARAMS.flags |= kLSLaunchAndHide; break;    // hide once launched
+        case 'C': LPARAMS.flags |= kLSLaunchInClassic; break;  // force Classic
+        case 'X': LPARAMS.flags ^= kLSLaunchStartClassic; break;// don't start Classic for app
 	case 'U': OPTS.forceURLs = true; break;
         case 'c':
             if (strlen(optarg) != 4) errexit("creator (argument of -c) must be four characters long");
@@ -398,30 +384,32 @@ void getargs(int argc, char * const argv[]) {
 	    appSpecified = true;
             break;
         case 'a':
-            OPTS.name = CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8);
-	    appSpecified = true;
+            err = FSPathMakeRef((UInt8 *)optarg, &APPLICATION, NULL);
+            if (err == noErr) {
+                LPARAMS.application = &APPLICATION;
+            } else {
+                OPTS.name = CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8);
+            }
+            appSpecified = true;
             break;
 	case 'u':
             { CFStringRef str = CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8);
-	      LSPEC.appURL = CFURLCreateWithString(NULL, str, NULL);
-              if (str != NULL) CFRelease(str);
+	      CFURLRef appURL = CFURLCreateWithString(NULL, str, NULL);
+  	      if (appURL == NULL)
+		  errexit("invalid URL (argument of -u)");
+	      err = CFURLGetFSRef(appURL, &APPLICATION);
+	      if (err != noErr)
+                  osstatusexit(err, "can't find application (argument of -u)");
             }
-	    if (LSPEC.appURL == NULL) {
-		errexit("invalid URL (argument of -u)");
-	    } else {
-		CFURLRef absURL = CFURLCopyAbsoluteURL(LSPEC.appURL);
-		CFRelease(LSPEC.appURL);
-		LSPEC.appURL = NULL;
-		if (absURL != NULL) {
-		    CFStringRef scheme = CFURLCopyScheme(absURL);
-		    LSPEC.appURL = absURL;
-		    if (scheme == NULL || !CFEqual(scheme, CFSTR("file")))
-			errexit("invalid file:// URL (argument of -u)");
-		    CFRelease(scheme);
-		}
-	    }
+            LPARAMS.application = &APPLICATION;
 	    appSpecified = true;
 	    break;
+        case 'o':
+            if (LPARAMS.argv == NULL)
+                LPARAMS.argv = CFArrayCreateMutable(NULL, 0, NULL);
+            CFArrayAppendValue((CFMutableArrayRef)LPARAMS.argv,
+                               CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8));
+            break;
         default: usage();
         }
     }
@@ -430,11 +418,11 @@ void getargs(int argc, char * const argv[]) {
     argv += optind;
     
     if ( (OPTS.action == ACTION_FIND || OPTS.action == ACTION_LAUNCH_URLS ||
-	  OPTS.action == ACTION_INFO_ITEMS) && LSPEC.launchFlags != DEFAULT_LAUNCH_FLAGS)
+	  OPTS.action == ACTION_INFO_ITEMS) && LPARAMS.flags != DEFAULT_LAUNCH_FLAGS)
         errexit("options -s, -b, -m, -h, -C, -X apply to application launch (not -n, -f or -l)");
     
     if (OPTS.creator == kLSUnknownCreator && OPTS.bundleID == NULL && OPTS.name == NULL) {
-	if (argc == 0 && LSPEC.appURL == NULL)
+	if (argc == 0 && LPARAMS.application == NULL)
 	    errexit("must specify an application by -u, or one or more of -c, -i, -a");
         if (!appSpecified) {
             if (OPTS.action == ACTION_FIND)
@@ -443,7 +431,7 @@ void getargs(int argc, char * const argv[]) {
                 OPTS.action = ACTION_OPEN_ITEMS;
         }
     } else {
-	if (LSPEC.appURL != NULL)
+	if (LPARAMS.application != NULL)
 	    errexit("application URL (argument of -u) incompatible with matching by -c, -i, -a");
     }
 
@@ -453,7 +441,7 @@ void getargs(int argc, char * const argv[]) {
     if (OPTS.action == ACTION_INFO_ITEMS && appSpecified)
 	errexit("can't get information (-f) on item(s) using an application (-u, -c, -i, -a)");
 
-    if (argc == 0 && OPTS.action == ACTION_OPEN && LSPEC.launchFlags & kLSLaunchAndPrint)
+    if (argc == 0 && OPTS.action == ACTION_OPEN && LPARAMS.flags & kLSLaunchAndPrint)
         errexit("print option (-p) must be accompanied by document(s) to print");
     
     if (argc != 0) {
@@ -467,13 +455,13 @@ void getargs(int argc, char * const argv[]) {
             errexit("application with documents only supported for open or print, not find");
 
         // handle document/item/URL arguments
-        LSPEC.itemURLs = CFArrayCreateMutable(NULL, argc, NULL);
+        ITEMS = CFArrayCreateMutable(NULL, argc, NULL);
         for (i = 0 ; i < argc ; i++) {
             argStr = NULL;
             if (strcmp(argv[i], "-") == 0) {
                 TEMPFILE = stdinAsTempFile();
-                itemURL = CFURLCreateFromFileSystemRepresentation(NULL, TEMPFILE, strlen(TEMPFILE), false);
-                LSPEC.launchFlags ^= kLSLaunchAsync;
+                itemURL = CFURLCreateFromFileSystemRepresentation(NULL, (UInt8 *)TEMPFILE, strlen(TEMPFILE), false);
+                LPARAMS.flags ^= kLSLaunchAsync;
             } else {
 		struct stat stat_buf;
 		if (!OPTS.forceURLs && stat(argv[i], &stat_buf) == 0) {
@@ -493,12 +481,12 @@ void getargs(int argc, char * const argv[]) {
 		}
                 if (itemURL == NULL) {
                     // check for file paths
-                    itemURL = CFURLCreateFromFileSystemRepresentation(NULL, argv[i], strlen(argv[i]), false);
+                    itemURL = CFURLCreateFromFileSystemRepresentation(NULL, (UInt8 *)argv[i], strlen(argv[i]), false);
                     err = LSCopyItemInfoForURL(itemURL, kLSRequestExtensionFlagsOnly, &docInfo);
                     if (err != noErr) osstatusexit(err, "unable to locate '%s'", argv[i]);
                 }
             }
-            CFArrayAppendValue((CFMutableArrayRef)LSPEC.itemURLs, itemURL);
+            CFArrayAppendValue((CFMutableArrayRef)ITEMS, itemURL);
             // don't CFRelease the itemURL because CFArray doesn't retain it by default
             if (argStr != NULL) CFRelease(argStr);
         }
@@ -516,7 +504,7 @@ Boolean stringFromURLIsRemote(CFURLRef url, char *strBuffer) {
 	CFStringGetCString(urlString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8);
 	CFRelease(urlString);
     } else {
-	if (CFURLGetFileSystemRepresentation(url, false, strBuffer, STRBUF_LEN)) {
+	if (CFURLGetFileSystemRepresentation(url, false, (UInt8 *)strBuffer, STRBUF_LEN)) {
 	    if (strBuffer[0] == '.' && strBuffer[1] == '/') {
 		// remove the leading "./"
 		char *fromBufPtr = strBuffer + 2;
@@ -597,12 +585,10 @@ void printSizes(const char *label, UInt64 logicalSize, UInt64 physicalSize, Bool
         
 }
 
-void printMoreInfoFromURL(CFURLRef url) {
-    FSRef fsr;
+void printMoreInfoForRef(FSRef fsr) {
     OSStatus err;
     FSCatalogInfo fscInfo;
 
-    if (!CFURLGetFSRef(url, &fsr)) return;
     err = FSGetCatalogInfo(&fsr, kFSCatInfoNodeFlags | kFSCatInfoAllDates | kFSCatInfoDataSizes | kFSCatInfoRsrcSizes | kFSCatInfoValence, &fscInfo, NULL, NULL, NULL);
     if (err != noErr) osstatusexit(err, "unable to get catalog information for file");
 
@@ -642,7 +628,7 @@ const char *utf8StringFromCFStringRef(CFStringRef cfStr) {
 }
 
 const char *utf8StringFromOSType(OSType osType) {
-    CFStringRef typeStr = CFStringCreateWithBytes(NULL, (const char *)&osType, 4, CFStringGetSystemEncoding(), false);
+    CFStringRef typeStr = CFStringCreateWithBytes(NULL, (UInt8 *)&osType, 4, CFStringGetSystemEncoding(), false);
     if (typeStr == NULL) {
 	// punt to displaying verbatim
 	static char tmpBuffer[4];
@@ -669,7 +655,10 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	CFStringRef version = NULL;
 	UInt32 intVersion = 0;
         OSStatus err = LSCopyItemInfoForURL(url, kLSRequestAllInfo, &info);
+        Boolean haveFSRef;
+        FSRef fsr;
         if (err != noErr) osstatusexit(err, "unable to get information about '%s'", strBuffer);
+        haveFSRef = CFURLGetFSRef(url, &fsr);
         
         printf("%s: ", strBuffer);
         
@@ -704,8 +693,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
             CFBundleRef bundle = CFBundleCreate(NULL, url);
             CFStringRef bundleID = NULL;
             if (bundle == NULL && (info.flags & kLSItemInfoIsApplication)) {
-                FSRef fsr;
-                if (info.flags & kLSItemInfoIsPackage || !CFURLGetFSRef(url, &fsr)) {
+                if (info.flags & kLSItemInfoIsPackage || !haveFSRef) {
                     printf("\t[can't access CFBundle for application]\n");
                 } else { // OS X bug causes this to fail when it shouldn't, so fake it
                     SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
@@ -717,7 +705,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
                         if ( (err = ResError()) != noErr || h == NULL) {
                             if (err != noErr && err != resNotFound) osstatusexit(err, "unable to read 'plst' 0 resource");
                         } else {
-                            CFDataRef plstData = CFDataCreate(NULL, *h, GetHandleSize(h));
+                            CFDataRef plstData = CFDataCreate(NULL, (UInt8 *)*h, GetHandleSize(h));
                             CFStringRef error;
                             CFPropertyListRef infoPlist = CFPropertyListCreateFromXMLData(NULL, plstData, kCFPropertyListImmutable, &error);
 			    if (plstData != NULL) {
@@ -770,20 +758,17 @@ void printInfoFromURL(CFURLRef url, void *context) {
                 printf("\tbundle ID: %s\n", utf8StringFromCFStringRef(bundleID));
                 CFRelease(bundleID);
             }
-        } else {
+        } else if (haveFSRef) {
 	    // try to get a version if we can, but don't complain if we can't
-	    FSRef fsr;
-	    if (CFURLGetFSRef(url, &fsr)) {
-		SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
-		if (ResError() == noErr) {
-		    VersRecHndl vers = (VersRecHndl)Get1Resource('vers', 1);
-		    if (ResError() == noErr && vers != NULL) {
-			version = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
-			intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
-		    }
-		}
-		CloseResFile(resFork);
-	    }
+            SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
+            if (ResError() == noErr) {
+                VersRecHndl vers = (VersRecHndl)Get1Resource('vers', 1);
+                if (ResError() == noErr && vers != NULL) {
+                    version = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
+                    intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
+                }
+            }
+            CloseResFile(resFork);
 	}
 	
 	if (version != NULL) {
@@ -798,7 +783,16 @@ void printInfoFromURL(CFURLRef url, void *context) {
         if (err != noErr) osstatusexit(err, "unable to get kind of '%s'", strBuffer);
         printf("\tkind: %s\n", utf8StringFromCFStringRef(kind));
 	CFRelease(kind);
-        printMoreInfoFromURL(url);
+        
+        if (haveFSRef) {
+            // content type identifier (UTI)
+            err = LSCopyItemAttribute(&fsr, kLSRolesAll, kLSItemContentType, (CFTypeRef *)&kind);
+            if (err == noErr) {
+                printf("\tcontent type ID: %s\n", utf8StringFromCFStringRef(kind));
+                CFRelease(kind);
+            }
+            printMoreInfoForRef(fsr);
+        }
     }
 }
 
@@ -821,55 +815,11 @@ void launchURL(CFURLRef url, ICInstance icInst) {
     CFRelease(urlStr);
 }
 
-OSStatus openFromURLSpec() {
-#ifndef BROKEN_LSOPENFROMURLSPEC
-    return LSOpenFromURLSpec(&LSPEC, NULL);
-#else
-    LSLaunchFSRefSpec spec = {NULL, 0, NULL, LSPEC.passThruParams,
-			      LSPEC.launchFlags, LSPEC.asyncRefCon};
-    CFIndex urlIndex, urlCount = LSPEC.itemURLs ? CFArrayGetCount(LSPEC.itemURLs) : 0;
-    FSRef *itemRefs = malloc(urlCount * sizeof(FSRef));
-    CFURLRef url;
-    CFStringRef scheme, fileScheme = CFSTR("file");
-    int itemIndex = 0;
-    OSStatus err;
-
-    for (urlIndex = 0 ; urlIndex < urlCount ; urlIndex++) {
-	url = CFArrayGetValueAtIndex(LSPEC.itemURLs, urlIndex);
-	scheme = CFURLCopyScheme(url);
-	if (CFEqual(scheme, fileScheme)) {
-	    if (CFURLGetFSRef(url, &itemRefs[itemIndex])) {
-		itemIndex++;
-		CFArrayRemoveValueAtIndex((CFMutableArrayRef)LSPEC.itemURLs, urlIndex);
-		urlIndex--;
-		urlCount--;
-	    } else {
-		fprintf(stderr, "%s: unable to locate: ", APP_NAME);
-		printPathFromURL(url, stderr);
-	    }
-	}
-        CFRelease(scheme);
-    }
-
-    if (urlCount > 0 || itemIndex == 0) { /* URLs, or no items */
-	err = LSOpenFromURLSpec(&LSPEC, NULL);
-	if (err != noErr)
-	    return err;
-    }
-    if (itemIndex > 0) {
-        FSRef appRef;
-	spec.numDocs = itemIndex;
-	spec.itemRefs = itemRefs;
-	if (LSPEC.appURL != NULL) {
-	    if (!CFURLGetFSRef(LSPEC.appURL, &appRef)) {
-		errexit("can't find application");
-	    }
-            spec.appRef = &appRef;
-	}
-	return LSOpenFromRefSpec(&spec, NULL);
-    }
-    return noErr;
-#endif
+OSStatus openItems(void) {
+    if (ITEMS == NULL)
+        ITEMS = CFArrayCreate(NULL, NULL, 0, NULL);
+    CFShow(LPARAMS.argv);
+    return LSOpenURLsWithRole(ITEMS, kLSRolesAll, NULL, &LPARAMS, NULL, 0);
 }
 
 int main (int argc, char * const argv[]) {
@@ -879,39 +829,40 @@ int main (int argc, char * const argv[]) {
     getargs(argc, argv);
 
     if (OPTS.action == ACTION_FIND || OPTS.action == ACTION_OPEN) {
-        if (LSPEC.appURL != NULL) goto findOK; // already have an application URL
-	err = LSFindApplicationForInfo(OPTS.creator, OPTS.bundleID, OPTS.name, NULL, &LSPEC.appURL);
+        if (LPARAMS.application != NULL) goto findOK; // already have an application FSRef
+	err = LSFindApplicationForInfo(OPTS.creator, OPTS.bundleID, OPTS.name, &APPLICATION, NULL);
+        LPARAMS.application = &APPLICATION;
         
 	if (err != noErr) {
 	    if (OPTS.name != NULL && !CFStringHasSuffix(OPTS.name, CFSTR(".app"))) {
 		OPTS.name = CFStringCreateMutableCopy(NULL, CFStringGetLength(OPTS.name) + 4, OPTS.name);
 		CFStringAppend((CFMutableStringRef)OPTS.name, CFSTR(".app"));
-		err = LSFindApplicationForInfo(OPTS.creator, OPTS.bundleID, OPTS.name, NULL, &LSPEC.appURL);
+		err = LSFindApplicationForInfo(OPTS.creator, OPTS.bundleID, OPTS.name, &APPLICATION, NULL);
 		if (err == noErr) goto findOK;
 	    }
-	    osstatusexit(err, "can't locate application", argv[1]);
-        findOK: ;
+	    osstatusexit(err, "can't locate application");
 	}
+        findOK: ;
     }
     
     switch (OPTS.action) {
     case ACTION_FIND:
-	printPathFromURL(LSPEC.appURL, stdout);
+	printPathFromURL(CFURLCreateFromFSRef(NULL, LPARAMS.application), stdout);
 	break;
     case ACTION_OPEN:
-	err = openFromURLSpec();
-	if (err != noErr) osstatusexit(err, "can't open application", argv[1]);
+	err = openItems();
+	if (err != noErr) osstatusexit(err, "can't open application");
 	break;
     case ACTION_FIND_ITEMS:
-        CFArrayApplyFunction(LSPEC.itemURLs, CFRangeMake(0, CFArrayGetCount(LSPEC.itemURLs)),
+        CFArrayApplyFunction(ITEMS, CFRangeMake(0, CFArrayGetCount(ITEMS)),
 			     (CFArrayApplierFunction) printPathFromURL, stdout);
 	break;
     case ACTION_OPEN_ITEMS:
-	err = openFromURLSpec();
-	if (err != noErr) osstatusexit(err, "can't open items", argv[1]);
+	err = openItems();
+	if (err != noErr) osstatusexit(err, "can't open items");
 	break;
     case ACTION_INFO_ITEMS:
-        CFArrayApplyFunction(LSPEC.itemURLs, CFRangeMake(0, CFArrayGetCount(LSPEC.itemURLs)),
+        CFArrayApplyFunction(ITEMS, CFRangeMake(0, CFArrayGetCount(ITEMS)),
 			     (CFArrayApplierFunction) printInfoFromURL, NULL);
 	break;
     case ACTION_LAUNCH_URLS:
@@ -919,7 +870,7 @@ int main (int argc, char * const argv[]) {
         ICInstance icInst;
         err = ICStart(&icInst, '\?\?\?\?'); // in case GCC trigraph handling is enabled
         if (err != noErr) osstatusexit(err, "can't initialize Internet Config", argv[1]);
-        CFArrayApplyFunction(LSPEC.itemURLs, CFRangeMake(0, CFArrayGetCount(LSPEC.itemURLs)),
+        CFArrayApplyFunction(ITEMS, CFRangeMake(0, CFArrayGetCount(ITEMS)),
                              (CFArrayApplierFunction) launchURL, icInst);
         ICStop(icInst);
         break;
