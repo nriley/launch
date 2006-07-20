@@ -32,7 +32,7 @@
 
 const char *APP_NAME;
 
-#define VERSION "1.1d1"
+#define VERSION "1.1d2"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -91,8 +91,8 @@ static errList ERRS = {
 };
 
 void usage() {
-    fprintf(stderr, "usage: %s [-npswbmhCXU] [-c creator] [-i bundleID] [-u URL] [-a name] [-o argument] [item ...] [-]\n"
-                    "   or: %s [-npflswbmhCXU] [-o argument] item ...\n", APP_NAME, APP_NAME);
+    fprintf(stderr, "usage: %s [-npswbmhCXLU] [-c creator] [-i bundleID] [-u URL] [-a name] [-o argument] [item ...] [-]\n"
+                    "   or: %s [-npflswbmhCXLU] [-o argument] item ...\n", APP_NAME, APP_NAME);
     fprintf(stderr,
         "  -n            print matching paths/URLs instead of opening them\n"
         "  -p            ask application(s) to print document(s)\n"
@@ -107,6 +107,7 @@ void usage() {
         "  -h            hide application once it's finished opening\n"
         "  -C            force CFM/PEF Carbon application to launch in Classic\n"
         "  -X            don't start Classic for this app if Classic isn't running\n"
+	"  -L            suppress normal opening behavior (e.g. untitled window)\n"
 	"  -U            interpret items as URLs, even if same-named files exist\n"
         "  -c creator    match application by four-character creator code ('ToyS')\n"
         "  -i bundle ID  match application by bundle identifier (com.apple.scripteditor)\n"
@@ -330,7 +331,7 @@ void getargs(int argc, char * const argv[]) {
 
     if (argc == 1) usage();
     
-    while ( (ch = getopt(argc, argv, "npflswbmhCXUc:i:u:a:o:")) != -1) {
+    while ( (ch = getopt(argc, argv, "npflswbmhCXLUc:i:u:a:o:")) != -1) {
         switch (ch) {
         case 'n':
             if (OPTS.action != ACTION_DEFAULT) errexit("choose only one of -n, -p, -f, -l options");
@@ -373,6 +374,13 @@ void getargs(int argc, char * const argv[]) {
         case 'h': LPARAMS.flags |= kLSLaunchAndHide; break;    // hide once launched
         case 'C': LPARAMS.flags |= kLSLaunchInClassic; break;  // force Classic
         case 'X': LPARAMS.flags ^= kLSLaunchStartClassic; break;// don't start Classic for app
+	case 'L':
+	{
+	    OSStatus err;
+	    LPARAMS.initialEvent = malloc(sizeof(AppleEvent));
+	    err = AECreateAppleEvent(kASAppleScriptSuite, kASLaunchEvent, NULL, kAutoGenerateReturnID, kAnyTransactionID, LPARAMS.initialEvent);
+	    if (err != noErr) osstatusexit(err, "unable to construct launch Apple Event", argv[0]);
+	}
 	case 'U': OPTS.forceURLs = true; break;
         case 'c':
             if (strlen(optarg) != 4) errexit("creator (argument of -c) must be four characters long");
@@ -530,26 +538,25 @@ void printPathFromURL(CFURLRef url, FILE *stream) {
 }
 
 void printDateTime(const char *label, UTCDateTime *utcTime, const char *postLabel, Boolean printIfEmpty) {
-    static Str255 dateStr, timeStr;
-    LocalDateTime localTime;
-    LongDateTime longTime;
+    static CFDateFormatterRef formatter = NULL;
+    static char strBuffer[STRBUF_LEN];
+    if (formatter == NULL) {
+	formatter = CFDateFormatterCreate(NULL, CFLocaleCopyCurrent(), kCFDateFormatterShortStyle, kCFDateFormatterMediumStyle);
+    }
+    CFAbsoluteTime absoluteTime;
     OSStatus err;
 
-    err = ConvertUTCToLocalDateTime(utcTime, &localTime);
+    err = UCConvertUTCDateTimeToCFAbsoluteTime(utcTime, &absoluteTime);
     if (err == kUTCUnderflowErr) {
         if (printIfEmpty) printf("\t%s: (not set)\n", label);
         return;
     }
-    if (err != noErr) osstatusexit(err, "unable to convert UTC %s date to local", label);
+    if (err != noErr) osstatusexit(err, "unable to convert UTC %s time", label);
 
-    longTime = localTime.highSeconds;
-    longTime <<= 32;
-    longTime |= localTime.lowSeconds;
-
-    // strings include trailing newlines; strip them.
-    LongDateString(&longTime, shortDate, dateStr, nil); dateStr[dateStr[0] + 1] = '\0';
-    LongTimeString(&longTime, true, timeStr, nil); timeStr[timeStr[0] + 1] = '\0';
-    printf("\t%s: %s %s%s\n", label, dateStr + 1, timeStr + 1, postLabel);
+    CFStringRef dateTimeString = CFDateFormatterCreateStringWithAbsoluteTime(NULL, formatter, absoluteTime);
+    CFStringGetCString(dateTimeString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8);
+    
+    printf("\t%s: %s%s\n", label, strBuffer, postLabel);
 }
 
 #define DFORMAT(SIZE) ((float)(SIZE) / 1024.)
