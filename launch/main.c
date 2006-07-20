@@ -825,7 +825,7 @@ void launchURL(CFURLRef url, ICInstance icInst) {
 OSStatus openItems(void) {
     if (ITEMS == NULL)
         ITEMS = CFArrayCreate(NULL, NULL, 0, NULL);
-    CFShow(LPARAMS.argv);
+    // CFShow(LPARAMS.argv);
     return LSOpenURLsWithRole(ITEMS, kLSRolesAll, NULL, &LPARAMS, NULL, 0);
 }
 
