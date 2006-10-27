@@ -384,7 +384,7 @@ void getargs(int argc, char * const argv[]) {
 	case 'U': OPTS.forceURLs = true; break;
         case 'c':
             if (strlen(optarg) != 4) errexit("creator (argument of -c) must be four characters long");
-            OPTS.creator = *(OSTypePtr)optarg;
+            OPTS.creator = htonl(*(OSTypePtr)optarg);
 	    appSpecified = true;
             break;
         case 'i':
@@ -635,6 +635,7 @@ const char *utf8StringFromCFStringRef(CFStringRef cfStr) {
 }
 
 const char *utf8StringFromOSType(OSType osType) {
+    osType = ntohl(osType);
     CFStringRef typeStr = CFStringCreateWithBytes(NULL, (UInt8 *)&osType, 4, CFStringGetSystemEncoding(), false);
     if (typeStr == NULL) {
 	// punt to displaying verbatim
