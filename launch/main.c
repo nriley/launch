@@ -32,7 +32,7 @@
 
 const char *APP_NAME;
 
-#define VERSION "1.1d2"
+#define VERSION "1.1b1"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
