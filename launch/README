@@ -223,12 +223,13 @@ VERSION HISTORY
 
 1.1 - unreleased
  - -L: send "launch" (ascr/noop) event to app, bypasses automatic
- - -o: pass command-line arguments (broken, r. 4474993)
    opening of untitled document, etc.
+ - -o: pass command-line arguments (broken, r. 4474993)
  - display content type ID (UTI)    
  - switched to new LSOpen APIs (now requires Mac OS X 10.4 or later)
  - switched to new date formatting APIs (the old ones are deprecated)
  - for compatibility with open(1), take app path as argument to -a
+ - Universal Binary, compatible with Intel Macs [Peter Hosey]
 1.0.1 - 3 April 2005
  - prefer files to URLs; added -U for old behavior
  - don't display extraneous leading './' on file paths
