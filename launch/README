@@ -225,8 +225,7 @@ VERSION HISTORY
 1.1 - 30 October 2006
  - -L: send "launch" (ascr/noop) event to app, bypasses automatic
    opening of untitled document, etc.
- - -o: pass command-line arguments (undocumented while still broken,
-   r. 4474993)
+ - -o: pass command-line arguments (broken, r. 4474993)
  - display content type ID (UTI)    
  - display architecture of Mach-O files
  - switched to new LSOpen APIs (now requires Mac OS X 10.4 or later)
