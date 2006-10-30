@@ -20,6 +20,9 @@
 
 #include <unistd.h>
 #include <sys/stat.h>
+#include <mach-o/fat.h>
+#include <mach-o/arch.h>
+#include <mach-o/loader.h>
 #include <Carbon/Carbon.h>
 #include <CoreServices/CoreServices.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -649,6 +652,85 @@ const char *utf8StringFromOSType(OSType osType) {
     return buffer;
 }
 
+// based on Apple's "CheckExecutableArchitecture" sample code
+
+#define MAX_HEADER_BYTES 512
+
+void swapHeader(uint8_t *bytes, ssize_t length) {
+    for (ssize_t i = 0 ; i < length ; i += 4)
+        *(uint32_t *)(bytes + i) = OSSwapInt32(*(uint32_t *)(bytes + i));
+}
+
+void printExecutableArchitectures(CFURLRef url, bool printOnFailure) {
+    uint8_t path[PATH_MAX];
+    if (printOnFailure)
+        printf("\tarchitecture: ");
+        
+    if (!CFURLGetFileSystemRepresentation(url, true, path, PATH_MAX)) {
+        if (printOnFailure) printf("(can't get executable)\n");
+        return;
+    }
+    
+    int fd = open((const char *)path, O_RDONLY, 0777);
+    if (fd <= 0) {
+        if (printOnFailure) printf("(can't read)\n");
+        return;
+    }
+    
+    uint8_t bytes[MAX_HEADER_BYTES];
+    ssize_t length = read(fd, bytes, MAX_HEADER_BYTES);
+    close(fd);
+
+    if (length < sizeof(struct mach_header_64)) {
+        if (printOnFailure) printf("(can't read Mach-O header)\n");
+        return;
+    }
+
+    // Look for any of the six magic numbers relevant to Mach-O executables, and swap the header if necessary.
+    uint32_t num_fat = 0, magic = *((uint32_t *)bytes);
+    uint32_t max_fat = (length - sizeof(struct fat_header)) / sizeof(struct fat_arch);
+    struct fat_arch one_fat = {0}, *fat;
+    if (MH_MAGIC == magic || MH_CIGAM == magic) {
+        struct mach_header *mh = (struct mach_header *)bytes;
+        if (MH_CIGAM == magic) swapHeader(bytes, length);
+        one_fat.cputype = mh->cputype;
+        one_fat.cpusubtype = mh->cpusubtype;
+        fat = &one_fat;
+        num_fat = 1;
+    } else if (MH_MAGIC_64 == magic || MH_CIGAM_64 == magic) {
+        struct mach_header_64 *mh = (struct mach_header_64 *)bytes;
+        if (MH_CIGAM_64 == magic) swapHeader(bytes, length);
+        one_fat.cputype = mh->cputype;
+        one_fat.cpusubtype = mh->cpusubtype;
+        fat = &one_fat;
+        num_fat = 1;
+    } else if (FAT_MAGIC == magic || FAT_CIGAM == magic) {
+        fat = (struct fat_arch *)(bytes + sizeof(struct fat_header));
+        if (FAT_CIGAM == magic) swapHeader(bytes, length);
+        num_fat = ((struct fat_header *)bytes)->nfat_arch;
+        if (num_fat > max_fat) num_fat = max_fat;
+    }
+    
+    if (num_fat == 0) {
+        if (printOnFailure) printf("(none found)\n");
+        return;
+    }
+    
+    if (!printOnFailure)
+        printf("\tarchitecture: ");
+        
+    for (int i = 0 ; i < num_fat ; i++) {
+        if (i != 0) printf(", ");
+        const NXArchInfo *arch = NXGetArchInfoFromCpuType(fat[i].cputype, fat[i].cpusubtype);
+        if (arch == NULL) {
+            printf("unknown (cputype %d, subtype %d)", fat[i].cputype, fat[i].cpusubtype);
+            continue;
+        }
+        printf(arch->description);
+    }
+    printf("\n");
+}
+
 // 'context' is to match prototype for CFArrayApplierFunction, it's unused
 void printInfoFromURL(CFURLRef url, void *context) {
     CFStringRef kind;
@@ -760,25 +842,33 @@ void printInfoFromURL(CFURLRef url, void *context) {
                     CFRetain(version);
                     intVersion = CFBundleGetVersionNumber(bundle);
                 }
+                CFURLRef executable = CFBundleCopyExecutableURL(bundle);
+                if (executable != NULL) {
+                    printExecutableArchitectures(executable, true);
+                    CFRelease(executable);
+                }
                 CFRelease(bundle);
             }
             if (bundleID != NULL) {
                 printf("\tbundle ID: %s\n", utf8StringFromCFStringRef(bundleID));
                 CFRelease(bundleID);
             }
-        } else if (haveFSRef) {
-	    // try to get a version if we can, but don't complain if we can't
-            SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
-            if (ResError() == noErr) {
-                VersRecHndl vers = (VersRecHndl)Get1Resource('vers', 1);
-                if (ResError() == noErr && vers != NULL) {
-                    version = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
-                    intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
+        } else {
+            printExecutableArchitectures(url, false);
+            if (haveFSRef) {
+                // try to get a version if we can, but don't complain if we can't
+                SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
+                if (ResError() == noErr) {
+                    VersRecHndl vers = (VersRecHndl)Get1Resource('vers', 1);
+                    if (ResError() == noErr && vers != NULL) {
+                        version = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
+                        intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
+                    }
                 }
+                CloseResFile(resFork);
             }
-            CloseResFile(resFork);
 	}
-	
+
 	if (version != NULL) {
 	    printf("\tversion: %s", utf8StringFromCFStringRef(version));
 	    if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);

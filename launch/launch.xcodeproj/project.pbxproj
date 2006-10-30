@@ -133,6 +133,7 @@
 					ppc,
 					i386,
 				);
+				GCC_C_LANGUAGE_STANDARD = c99;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				PREBINDING = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
@@ -146,6 +147,7 @@
 					ppc,
 					i386,
 				);
+				GCC_C_LANGUAGE_STANDARD = c99;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				PREBINDING = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;

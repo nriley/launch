@@ -60,10 +60,10 @@ Uninstallation:
 COMPILATION
 -----------
 
-An Xcode project, 'launch.xcodeproj', is included.  A precompiled Universal
-binary is also provided.  'launch' was developed and tested under Mac OS X 
-10.4.7 with Xcode 2.3, and does not require any additional software to
-build.
+An Xcode project, 'launch.xcodeproj', is included.  A precompiled
+Universal binary is also provided.  'launch' was developed and tested
+under Mac OS X 10.4.8 with Xcode 2.4, and does not require any
+additional software to build.
 
 USAGE
 -----
@@ -88,11 +88,13 @@ Some examples:
 [Your preferred email client opens a new message to comment on launch]
 
 % launch -f /Applications/Preview.app
-/Applications/Preview.app: Mac OS X application package 
+/Applications/Preview.app: Mac OS X application package
         type: 'APPL'    creator: 'prvw'
+        architecture: Intel 80x86, PowerPC
         bundle ID: com.apple.Preview
-        version: 2.1.0
+        version: 3.0.8
         kind: Application
+        content type ID: com.apple.application-bundle
         contents: 1 item
 [...]
 
@@ -119,11 +121,10 @@ A. The -f option to launch can help.  Say you have OmniWeb in the
 Type 'launch -f', and drop the OmniWeb icon on Terminal:
 
 % launch -f /Applications/Internet/OmniWeb.app
-/Applications/Internet/OmniWeb.app: Mac OS X application package 
+/Applications/Internet/OmniWeb.app: scriptable Mac OS X application package 
         type: 'APPL'    creator: 'OWEB'
-        bundle ID: com.omnigroup.OmniWeb
-        version: 4.5
-        kind: Application
+        architecture: PowerPC, Intel 80x86
+        bundle ID: com.omnigroup.OmniWeb5
 
 Note that bundle IDs are not case-sensitive: com.barebones.BBEdit is
 the same as com.barebones.bbedit.
@@ -226,6 +227,7 @@ VERSION HISTORY
    opening of untitled document, etc.
  - -o: pass command-line arguments (broken, r. 4474993)
  - display content type ID (UTI)    
+ - display architecture of Mach-O files
  - switched to new LSOpen APIs (now requires Mac OS X 10.4 or later)
  - switched to new date formatting APIs (the old ones are deprecated)
  - for compatibility with open(1), take app path as argument to -a
