@@ -1,20 +1,20 @@
-.Dd Sun Apr 3 2005       \" DATE 
+.Dd Mon Oct 30 2006      \" DATE 
 .Dt LAUNCH 1 LOCAL	 \" Program name and manual section number 
-.Os launch 1.0.1
+.Os launch 1.1
 .Sh NAME
 .Nm launch
 .Nd find, open, print, or get information about files, folders, disks and URLs
 .Sh SYNOPSIS
 .Nm launch
-.Op Fl npswbmhCXU        \" [-npswbmhCXU]
-.Op Fl c Ar creator      \" [-c creator]
-.Op Fl i Ar bundleID     \" [-i bundleID]
-.Op Fl u Ar URL          \" [-u URL]
-.Op Fl a Ar name         \" [-a name]
-.Op Ar item ...          \" [item ...]
-.Op Ar -                 \" [-]
+.Op Fl npswbmhCXLU          \" [-npswbmhCXLU]
+.Op Fl c Ar creator         \" [-c creator]
+.Op Fl i Ar bundleID        \" [-i bundleID]
+.Op Fl u Ar URL             \" [-u URL]
+.Op Fl a Ar name | Ar path  \" [-a name|path]
+.Op Ar item ...             \" [item ...]
+.Op Ar -                    \" [-]
 .Nm 
-.Op Fl npflswbmhCXU
+.Op Fl npflswbmhCXLU
 .Ar item ...
 .Sh DESCRIPTION
 The
@@ -23,7 +23,7 @@ command is a replacement for Mac OS X's
 .Xr open 1
 command and opens a file (or a folder/directory or URL), as if you had
 double-clicked its icon in the Finder. If no application is specified,
-the default application determined by LaunchServices is used to open
+the default application determined by Launch Services is used to open
 items.
 .Pp
 .Nm
@@ -65,6 +65,11 @@ Bundle identifiers are not case-sensitive.
 Match application at
 .Ar URL
 (which must be a file:// URL).
+.It Fl a Ar name | Ar path
+Match application named
+.Ar name
+or at the path
+.Ar path .
 .El
 .Pp
 In addition to the above, you can specify applications, documents,
@@ -98,6 +103,10 @@ Force CFM/PEF Carbon application to open in Classic.
 .It Fl X
 Don't start the Classic environment for this Classic application if
 Classic isn't running.
+.It Fl L
+Suppress the normal opening behavior of the application; for example,
+opening an untitled document.  (This works by sending a "launch", or
+ascr/noop, Apple event to the application.)
 .It Fl U
 Interpret items as URLs, even if files with the same names as the URLs
 exist.  (This was the default behavior in
@@ -111,27 +120,16 @@ exist.  (This was the default behavior in
 .Xr GetFileInfo 1 ,
 .Xr open 1
 .Sh BUGS              \" Document known, unremedied bugs
-Launching may be very slow on Mac OS X 10.2.8 and earlier; this is an
-acknowledged Mac OS X bug with no known workaround, and may affect
-Apple's
-.Xr open 1
-command as well in certain cases.  It is fixed in Mac OS X 10.3.
-.Pp
-The
-.Fl m
-option may not work well (or at all) before Mac OS X 10.3 because of
-Mac OS X bugs.
-.Pp
 The
 .Fl h
 option requires the
 .Fl b
 option to be used as well, or Cocoa applications will not hide on
 startup.  This is a Mac OS X bug which is still unfixed as of Mac OS X
-10.3.
+10.4.8.
 .Sh AUTHOR
 .An "Nicholas Riley" Aq launchsw@sabi.net
 .Pp
-This page written in part by
+Original man page written by
 .An "Hisashi T Fujinaka" Aq htodd@twofifty.com .
 .\" .Sh HISTORY           \" Document history if command behaves in a unique manner 

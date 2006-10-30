@@ -1,5 +1,5 @@
-launch 1.1d2 [unreleased]
-============
+launch 1.1 [30 October 2006]
+==========
 
 A command-line launcher for Mac OS X in the spirit of open(1).
 
@@ -104,7 +104,7 @@ appswitch (another one of my command-line tools).
 
     e() {
       ( emacsclient -n $@ >&/dev/null && \
-	appswitch -a Emacs ) || \
+        appswitch -a Emacs ) || \
       ( launch -ba Emacs && \
   	until { emacsclient -n $@ >&/dev/null } do sleep 1; done;
         appswitch -a Emacs )
@@ -222,10 +222,11 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
-1.1 - unreleased
+1.1 - 30 October 2006
  - -L: send "launch" (ascr/noop) event to app, bypasses automatic
    opening of untitled document, etc.
- - -o: pass command-line arguments (broken, r. 4474993)
+ - -o: pass command-line arguments (undocumented while still broken,
+   r. 4474993)
  - display content type ID (UTI)    
  - display architecture of Mach-O files
  - switched to new LSOpen APIs (now requires Mac OS X 10.4 or later)

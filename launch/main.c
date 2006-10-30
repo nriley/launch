@@ -16,6 +16,7 @@
 */
 
 #define BROKEN_AUTHORIZATION 1
+#define BROKEN_ARGUMENTS 1
 #define kComponentSignatureString "launch"
 
 #include <unistd.h>
@@ -35,7 +36,7 @@
 
 const char *APP_NAME;
 
-#define VERSION "1.1b1"
+#define VERSION "1.1"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -94,8 +95,12 @@ static errList ERRS = {
 };
 
 void usage() {
-    fprintf(stderr, "usage: %s [-npswbmhCXLU] [-c creator] [-i bundleID] [-u URL] [-a name] [-o argument] [item ...] [-]\n"
-                    "   or: %s [-npflswbmhCXLU] [-o argument] item ...\n", APP_NAME, APP_NAME);
+    fprintf(stderr, "usage: %s [-npswbmhCXLU] [-c creator] [-i bundleID] [-u URL] [-a name|path] [-o argument] [item ...] [-]\n"
+                    "   or: %s [-npflswbmhCXLU] "
+#ifndef BROKEN_ARGUMENTS
+                    "[-o argument] "
+#endif
+                    "item ...\n", APP_NAME, APP_NAME);
     fprintf(stderr,
         "  -n            print matching paths/URLs instead of opening them\n"
         "  -p            ask application(s) to print document(s)\n"
@@ -116,7 +121,9 @@ void usage() {
         "  -i bundle ID  match application by bundle identifier (com.apple.scripteditor)\n"
         "  -u URL        open application at file:// URL (NOT RECOMMENDED for scripts)\n"
         "  -a name|path  match application by name/path (NOT RECOMMENDED, very fragile)\n"
+#ifndef BROKEN_ARGUMENTS
         "  -o argument   pass argument to application (may be specified more than once)\n"
+#endif
         "'document' may be a file, folder, or disk - whatever the application can open.\n"
         "'item' may be a file, folder, disk, or URL.\n\n");
     fprintf(stderr, "launch "VERSION" (c) 2001-06 Nicholas Riley <http://web.sabi.net/nriley/software/>.\n"
@@ -415,12 +422,14 @@ void getargs(int argc, char * const argv[]) {
             LPARAMS.application = &APPLICATION;
 	    appSpecified = true;
 	    break;
+#ifndef BROKEN_ARGUMENTS
         case 'o':
             if (LPARAMS.argv == NULL)
                 LPARAMS.argv = CFArrayCreateMutable(NULL, 0, NULL);
             CFArrayAppendValue((CFMutableArrayRef)LPARAMS.argv,
                                CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8));
             break;
+#endif
         default: usage();
         }
     }
