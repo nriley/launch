@@ -1,5 +1,5 @@
-launch 1.1 [30 October 2006]
-==========
+launch 1.1.1 [unreleased]
+============
 
 A command-line launcher for Mac OS X in the spirit of open(1).
 
@@ -222,6 +222,8 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
+1.1.1 - unreleased
+ - updated error codes for Mac OS X 10.4
 1.1 - 30 October 2006
  - -L: send "launch" (ascr/noop) event to app, bypasses automatic
    opening of untitled document, etc.

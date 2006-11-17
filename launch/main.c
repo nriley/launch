@@ -69,10 +69,17 @@ typedef struct {
 
 static errList ERRS = {
     // Launch Services errors
+    { kLSAppInTrashErr, "application is in the Trash" },
+    { kLSExecutableIncorrectFormat, "executable is unsupported on this processor architecture" },
     { kLSUnknownErr, "unknown Launch Services error" },
-    { kLSApplicationNotFoundErr, "application not found" },
+    { kLSNotAnApplicationErr, "item is not an application" },
+    { kLSDataUnavailableErr, "item metadata is unavailable" },
+    { kLSApplicationNotFoundErr, "application not found for document" },
+    { kLSUnknownTypeErr, "cannot determine item kind" },
     { kLSLaunchInProgressErr, "application is being opened; please try again after the application is open" },
-    { kLSNotRegisteredErr, "application not registered in Launch Services database" },
+    { kLSServerCommunicationErr, "unable to connect to Launch Services.\nAre you logged in?" },
+    { kLSIncompatibleSystemVersionErr, "application is incompatible with this version of Mac OS X" },
+    { kLSNoLaunchPermissionErr, "no permission to launch this application", },
     { kLSNoExecutableErr, "application package contains no executable, or an unusable executable" },
     { kLSNoClassicEnvironmentErr, "Classic environment required but not available" },
     { kLSMultipleSessionsNotSupportedErr, "unable to launch multiple instances of application" },
