@@ -62,7 +62,7 @@ COMPILATION
 
 An Xcode project, 'launch.xcodeproj', is included.  A precompiled
 Universal binary is also provided.  'launch' was developed and tested
-under Mac OS X 10.4.8 with Xcode 2.4, and does not require any
+under Mac OS X 10.5.2 with Xcode 3.1, and does not require any
 additional software to build.
 
 USAGE
@@ -224,6 +224,7 @@ VERSION HISTORY
 
 1.1.1 - unreleased
  - updated error codes for Mac OS X 10.4
+ - read Info.plists embedded in all Mach-O binaries (e.g. hdiutil)
 1.1 - 30 October 2006
  - -L: send "launch" (ascr/noop) event to app, bypasses automatic
    opening of untitled document, etc.

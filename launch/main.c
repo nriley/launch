@@ -2,7 +2,7 @@
  launch - a smarter 'open' replacement
  Nicholas Riley <launchsw@sabi.net>
 
- Copyright (c) 2001-06, Nicholas Riley
+ Copyright (c) 2001-08, Nicholas Riley
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@
 
 const char *APP_NAME;
 
-#define VERSION "1.1"
+#define VERSION "1.1.1d2"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -98,6 +98,7 @@ static errList ERRS = {
     { kCGErrorIllegalArgument, "window server error.\nAre you logged in?" },
     { kCGErrorApplicationRequiresNewerSystem, "application requires a newer Mac OS X version" },
     { fnfErr, "file not found" },
+    { eofErr, "data not found" },
     { 0, NULL }
 };
 
@@ -754,159 +755,150 @@ void printInfoFromURL(CFURLRef url, void *context) {
     
     check(url != NULL && context == NULL);
 
-    if (stringFromURLIsRemote(url, strBuffer))
+    if (stringFromURLIsRemote(url, strBuffer)) {
         printf("<%s>: URL\n", strBuffer);
-    else {
-        static LSItemInfoRecord info;
-	CFStringRef version = NULL;
-	UInt32 intVersion = 0;
-        OSStatus err = LSCopyItemInfoForURL(url, kLSRequestAllInfo, &info);
-        Boolean haveFSRef;
-        FSRef fsr;
-        if (err != noErr) osstatusexit(err, "unable to get information about '%s'", strBuffer);
-        haveFSRef = CFURLGetFSRef(url, &fsr);
-        
-        printf("%s: ", strBuffer);
-        
-        // modifiers
-        if (info.flags & kLSItemInfoIsInvisible) printf("invisible ");
-        if (info.flags & kLSItemInfoAppIsScriptable) printf("scriptable ");
-        if (info.flags & kLSItemInfoIsNativeApp) printf("Mac OS X ");
-        if (info.flags & kLSItemInfoIsClassicApp) printf("Classic ");
-        
-        // kind
-        if (info.flags & kLSItemInfoIsVolume) printf("volume");
-        else if (info.flags & kLSItemInfoIsApplication) printf("application ");
-        else if (info.flags & kLSItemInfoIsPackage) printf("non-application ");
-        else if (info.flags & kLSItemInfoIsContainer) printf("folder");
-        else if (info.flags & kLSItemInfoIsAliasFile) printf("alias");
-        else if (info.flags & kLSItemInfoIsSymlink) printf("symbolic link");
-        else if (info.flags & kLSItemInfoIsPlainFile) printf("document");
-        else printf("unknown file system entity");
+	return;
+    }
+    
+    static LSItemInfoRecord info;
+    OSStatus err;
+    if ( (err = LSCopyItemInfoForURL(url, kLSRequestAllInfo, &info)) != noErr)
+	osstatusexit(err, "unable to get information about '%s'", strBuffer);
+    
+    printf("%s: ", strBuffer);
+    
+    // modifiers
+    if (info.flags & kLSItemInfoIsInvisible) printf("invisible ");
+    if (info.flags & kLSItemInfoAppIsScriptable) printf("scriptable ");
+    if (info.flags & kLSItemInfoIsNativeApp) printf("Mac OS X ");
+    if (info.flags & kLSItemInfoIsClassicApp) printf("Classic ");
+    
+    // kind
+    if (info.flags & kLSItemInfoIsVolume) printf("volume");
+    else if (info.flags & kLSItemInfoIsApplication) printf("application ");
+    else if (info.flags & kLSItemInfoIsPackage) printf("non-application ");
+    else if (info.flags & kLSItemInfoIsContainer) printf("folder");
+    else if (info.flags & kLSItemInfoIsAliasFile) printf("alias");
+    else if (info.flags & kLSItemInfoIsSymlink) printf("symbolic link");
+    else if (info.flags & kLSItemInfoIsPlainFile) printf("document");
+    else printf("unknown file system entity");
 
-        if (info.flags & kLSItemInfoIsPackage) printf("package ");
+    if (info.flags & kLSItemInfoIsPackage) printf("package ");
 
-        if (info.flags & kLSItemInfoAppPrefersNative) printf("[Carbon, prefers native OS X]");
-        else if (info.flags & kLSItemInfoAppPrefersClassic) printf("[Carbon, prefers Classic]");
+    if (info.flags & kLSItemInfoAppPrefersNative) printf("[Carbon, prefers native OS X]");
+    else if (info.flags & kLSItemInfoAppPrefersClassic) printf("[Carbon, prefers Classic]");
 
-        printf("\n");
-        if (!(info.flags & kLSItemInfoIsContainer) || info.flags & kLSItemInfoIsPackage) {
-	    printf("\ttype: '%s'", utf8StringFromOSType(info.filetype));
-	    printf("\tcreator: '%s'\n", utf8StringFromOSType(info.creator));
-        }
-        if (info.flags & kLSItemInfoIsPackage || info.flags & kLSItemInfoIsApplication) {
-        	// a package, or possibly a native app with a 'plst' resource
-            CFBundleRef bundle = CFBundleCreate(NULL, url);
-            CFStringRef bundleID = NULL;
-            if (bundle == NULL && (info.flags & kLSItemInfoIsApplication)) {
-                if (info.flags & kLSItemInfoIsPackage || !haveFSRef) {
-                    printf("\t[can't access CFBundle for application]\n");
-                } else { // OS X bug causes this to fail when it shouldn't, so fake it
-                    SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
-                    OSStatus err = ResError();
-                    if (err != noErr) {
-                        printf("\t[can't open resource fork: %s]\n", osstatusstr(err));
-                    } else {
-                        Handle h = Get1Resource('plst', 0);
-                        if ( (err = ResError()) != noErr || h == NULL) {
-                            if (err != noErr && err != resNotFound) osstatusexit(err, "unable to read 'plst' 0 resource");
-                        } else {
-                            CFDataRef plstData = CFDataCreate(NULL, (UInt8 *)*h, GetHandleSize(h));
-                            CFStringRef error;
-                            CFPropertyListRef infoPlist = CFPropertyListCreateFromXMLData(NULL, plstData, kCFPropertyListImmutable, &error);
-			    if (plstData != NULL) {
-				CFRelease(plstData);
-				plstData = NULL;
-			    } else {
-				// this function should handle the 'plst' 0 case too, but it doesn't provide error messages; however, it handles the case of an unbundled Mach-O binary, so it is useful as a fallback
-				infoPlist = CFBundleCopyInfoDictionaryForURL(url);
-			    }
-                            if (infoPlist == NULL) {
-                                printf("\t['plst' 0 resource invalid: %s]\n", utf8StringFromCFStringRef(error));
-                                CFRelease(error);
-                            } else {
-                                // mimic CFBundle logic below
-                                bundleID = CFDictionaryGetValue(infoPlist, kCFBundleIdentifierKey);
-                                if (bundleID != NULL) CFRetain(bundleID);
-                                version = CFDictionaryGetValue(infoPlist, CFSTR("CFBundleShortVersionString"));
-                                if (version == NULL)
-                                    version = CFDictionaryGetValue(infoPlist, kCFBundleVersionKey);
-                                if (version != NULL) CFRetain(version);
-                                CFRelease(infoPlist);
-                            }
-                        }
-                        VersRecHndl vers = (VersRecHndl)Get1Resource('vers', 1);
-                        if ( (err = ResError()) != noErr || vers == NULL) {
-                            if (err != noErr && err != resNotFound) osstatusexit(err, "unable to read 'vers' 1 resource");
-                        } else {
-                            if (version == NULL) { // prefer 'plst' version
-                                version = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
-                            }
-                            intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
-                        }
-                        CloseResFile(resFork);
-                    }
-                }
-            } else {
-                bundleID = CFBundleGetIdentifier(bundle);
-                if (bundleID != NULL) CFRetain(bundleID);
-		// prefer a short version string, e.g. "1.0 Beta" instead of "51" for Safari
-                version = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleShortVersionString"));
-		if (version == NULL)
-		    version = CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey);
-                if (version != NULL) {
-                    CFRetain(version);
-                    intVersion = CFBundleGetVersionNumber(bundle);
-                }
-                CFURLRef executable = CFBundleCopyExecutableURL(bundle);
-                if (executable != NULL) {
-                    printExecutableArchitectures(executable, true);
-                    CFRelease(executable);
-                }
-                CFRelease(bundle);
-            }
-            if (bundleID != NULL) {
-                printf("\tbundle ID: %s\n", utf8StringFromCFStringRef(bundleID));
-                CFRelease(bundleID);
-            }
-        } else {
-            printExecutableArchitectures(url, false);
-            if (haveFSRef) {
-                // try to get a version if we can, but don't complain if we can't
-                SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
-                if (ResError() == noErr) {
-                    VersRecHndl vers = (VersRecHndl)Get1Resource('vers', 1);
-                    if (ResError() == noErr && vers != NULL) {
-                        version = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
-                        intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
-                    }
-                }
-                CloseResFile(resFork);
-            }
-	}
+    printf("\n");
+    if (!(info.flags & kLSItemInfoIsContainer) || info.flags & kLSItemInfoIsPackage) {
+	printf("\ttype: '%s'", utf8StringFromOSType(info.filetype));
+	printf("\tcreator: '%s'\n", utf8StringFromOSType(info.creator));
+    }
 
+    CFStringRef bundleID = NULL;
+    CFStringRef version = NULL;
+    UInt32 intVersion = 0;
+    FSRef fsr;
+    Boolean haveFSRef = CFURLGetFSRef(url, &fsr);
+    CFBundleRef bundle = NULL;
+    
+    if ((info.flags & kLSItemInfoIsPackage || info.flags & kLSItemInfoIsApplication) &&
+	( (bundle = CFBundleCreate(NULL, url)) != NULL)) {
+	bundleID = CFBundleGetIdentifier(bundle);
+	if (bundleID != NULL) CFRetain(bundleID);
+	// prefer a short version string, e.g. "1.0 Beta" instead of "51" for Safari
+	version = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleShortVersionString"));
+	if (version == NULL)
+	    version = CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey);
 	if (version != NULL) {
-	    printf("\tversion: %s", utf8StringFromCFStringRef(version));
-	    if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);
-	    putchar('\n');
-	    CFRelease(version);
+	    CFRetain(version);
+	    intVersion = CFBundleGetVersionNumber(bundle);
 	}
+	CFURLRef executable = CFBundleCopyExecutableURL(bundle);
+	if (executable != NULL) {
+	    printExecutableArchitectures(executable, true);
+	    CFRelease(executable);
+	}
+	CFRelease(bundle);
+    } else if (info.flags & kLSItemInfoIsPackage || !haveFSRef) {
+	printf("\t[can't access package contents]\n");
+    } else if (haveFSRef) {
+	SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
+	CFPropertyListRef infoPlist = NULL;
+	if ( (err = ResError()) == noErr) {
+	    Handle h = Get1Resource('plst', 0);
+	    if (h == NULL) {
+		err = ResError();
+		if (err != noErr && err != resNotFound)
+		    osstatusexit(err, "unable to read 'plst' 0 resource");
+	    } else {
+		CFDataRef plstData = CFDataCreate(NULL, (UInt8 *)*h, GetHandleSize(h));
+		CFStringRef error = NULL;
+		infoPlist = CFPropertyListCreateFromXMLData(NULL, plstData, kCFPropertyListImmutable, &error);
+		if (plstData != NULL) CFRelease(plstData);
+		if (infoPlist == NULL) {
+		    printf("\t['plst' 0 resource invalid: %s]\n", utf8StringFromCFStringRef(error));
+		    CFRelease(error);
+		}
+	    }
+	}
+	if (infoPlist == NULL) {
+	    // this function should handle the 'plst' 0 case too, but it doesn't provide error messages; however, it handles the case of an unbundled Mach-O binary, so it is useful as a fallback
+	    infoPlist = CFBundleCopyInfoDictionaryForURL(url);
+	    if (infoPlist == NULL && info.flags & kLSItemInfoIsApplication && resFork == -1)
+		printf("\t[can't open resource fork: %s]\n", osstatusstr(err));
+	}
+	if (infoPlist != NULL) {
+	    // mimic CFBundle logic above
+	    bundleID = CFDictionaryGetValue(infoPlist, kCFBundleIdentifierKey);
+	    if (bundleID != NULL) CFRetain(bundleID);
+	    version = CFDictionaryGetValue(infoPlist, CFSTR("CFBundleShortVersionString"));
+	    if (version == NULL)
+		version = CFDictionaryGetValue(infoPlist, kCFBundleVersionKey);
+	    if (version != NULL) CFRetain(version);
+	    CFRelease(infoPlist);
+	}
+	if (resFork != -1) {
+	    VersRecHndl vers = (VersRecHndl)Get1Resource('vers', 1);
+	    if (vers == NULL) {
+		err = ResError();
+		if (err != noErr && err != resNotFound)
+		    osstatusexit(err, "unable to read 'vers' 1 resource");
+	    } else {
+		if (version == NULL) { // prefer 'plst' version
+		    version = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
+		}
+		intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
+	    }
+	    CloseResFile(resFork);
+	}
+	printExecutableArchitectures(url, false);
+    }
 
-        // kind string
-        err = LSCopyKindStringForURL(url, &kind);
-        if (err != noErr) osstatusexit(err, "unable to get kind of '%s'", strBuffer);
-        printf("\tkind: %s\n", utf8StringFromCFStringRef(kind));
-	CFRelease(kind);
-        
-        if (haveFSRef) {
-            // content type identifier (UTI)
-            err = LSCopyItemAttribute(&fsr, kLSRolesAll, kLSItemContentType, (CFTypeRef *)&kind);
-            if (err == noErr) {
-                printf("\tcontent type ID: %s\n", utf8StringFromCFStringRef(kind));
-                CFRelease(kind);
-            }
-            printMoreInfoForRef(fsr);
-        }
+    if (bundleID != NULL) {
+	printf("\tbundle ID: %s\n", utf8StringFromCFStringRef(bundleID));
+	CFRelease(bundleID);
+    }
+    if (version != NULL) {
+	printf("\tversion: %s", utf8StringFromCFStringRef(version));
+	if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);
+	putchar('\n');
+	CFRelease(version);
+    }
+
+    // kind string
+    err = LSCopyKindStringForURL(url, &kind);
+    if (err != noErr) osstatusexit(err, "unable to get kind of '%s'", strBuffer);
+    printf("\tkind: %s\n", utf8StringFromCFStringRef(kind));
+    CFRelease(kind);
+    
+    if (haveFSRef) {
+	// content type identifier (UTI)
+	err = LSCopyItemAttribute(&fsr, kLSRolesAll, kLSItemContentType, (CFTypeRef *)&kind);
+	if (err == noErr) {
+	    printf("\tcontent type ID: %s\n", utf8StringFromCFStringRef(kind));
+	    CFRelease(kind);
+	}
+	printMoreInfoForRef(fsr);
     }
 }
 
