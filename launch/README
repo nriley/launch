@@ -223,7 +223,7 @@ VERSION HISTORY
 ---------------
 
 1.1.1 - unreleased
- - updated error codes for Mac OS X 10.4
+ - update error codes for OS X 10.8
  - read Info.plists embedded in all Mach-O binaries (e.g. hdiutil)
  - display alias targets
 1.1 - 30 October 2006

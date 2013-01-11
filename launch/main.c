@@ -2,7 +2,7 @@
  launch - a smarter 'open' replacement
  Nicholas Riley <launchsw@sabi.net>
 
- Copyright (c) 2001-09, Nicholas Riley
+ Copyright (c) 2001-13, Nicholas Riley
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@
 
 const char *APP_NAME;
 
-#define VERSION "1.1.1d3"
+#define VERSION "1.1.1d4"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -96,7 +96,6 @@ static errList ERRS = {
     { nsvErr, "the volume cannot be found (buggy filesystem?)" },
     { procNotFound, "unable to connect to system service.\nAre you logged in?" },
     { kCGErrorIllegalArgument, "window server error.\nAre you logged in?" },
-    { kCGErrorApplicationRequiresNewerSystem, "application requires a newer Mac OS X version" },
     { fnfErr, "file not found" },
     { eofErr, "data not found" },
     { 0, NULL }
@@ -659,7 +658,7 @@ const char *utf8StringFromOSType(OSType osType) {
     CFStringRef typeStr = CFStringCreateWithBytes(NULL, (UInt8 *)&osType, 4, CFStringGetSystemEncoding(), false);
     if (typeStr == NULL) {
 	// punt to displaying verbatim
-	static char tmpBuffer[4];
+	static char tmpBuffer[5];
 	tmpBuffer[4] = '\0';
 	strncpy(tmpBuffer, (const char *)&osType, 4);
 	return tmpBuffer;
@@ -743,7 +742,7 @@ void printExecutableArchitectures(CFURLRef url, bool printOnFailure) {
             printf("unknown (cputype %d, subtype %d)", fat[i].cputype, fat[i].cpusubtype);
             continue;
         }
-        printf(arch->description);
+        printf("%s", arch->description);
     }
     printf("\n");
 }
