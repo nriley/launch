@@ -223,9 +223,11 @@ VERSION HISTORY
 ---------------
 
 1.1.1 - unreleased
- - update error codes for OS X 10.8
+ - update error codes and eliminate use of deprecated API for OS X
+   10.8
  - read Info.plists embedded in all Mach-O binaries (e.g. hdiutil)
  - display alias targets
+ - now requires Mac OS X 10.6 or later
 1.1 - 30 October 2006
  - -L: send "launch" (ascr/noop) event to app, bypasses automatic
    opening of untitled document, etc.

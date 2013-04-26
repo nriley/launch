@@ -36,7 +36,7 @@
 
 const char *APP_NAME;
 
-#define VERSION "1.1.1d4"
+#define VERSION "1.1.1d5"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -943,6 +943,19 @@ OSStatus openItems(void) {
     return LSOpenURLsWithRole(ITEMS, kLSRolesAll, NULL, &LPARAMS, NULL, 0);
 }
 
+void background() {
+    if (fork() > 1)
+        exit(0);
+    
+    int fd;
+    
+    if ( (fd = open("/dev/null", O_RDWR, 0)) != -1) {
+        dup2(fd, STDIN_FILENO);
+        dup2(fd, STDOUT_FILENO);
+        dup2(fd, STDERR_FILENO);
+    }
+}
+
 int main (int argc, char * const argv[]) {
     OSStatus err;
     
@@ -1000,7 +1013,7 @@ int main (int argc, char * const argv[]) {
 
     if (TEMPFILE != NULL) {
         // the application may take a while to finish opening the temporary file
-        daemon(0, 0);
+        background();
         sleep(60);
         unlink(TEMPFILE);
     }
