@@ -162,8 +162,9 @@
 				COPY_PHASE_STRIP = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = launch;
-				SDKROOT = "";
+				SDKROOT = macosx10.8;
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
@@ -177,8 +178,9 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				INSTALL_PATH = "\U0001/usr/local/bin";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = launch;
-				SDKROOT = "";
+				SDKROOT = macosx10.8;
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
