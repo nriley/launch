@@ -53,6 +53,7 @@ struct {
     ACTION_DEFAULT
 };
 
+// equivalent to kLSLaunchDefaults, but we can modify individual flags later
 #define DEFAULT_LAUNCH_FLAGS (kLSLaunchNoParams | kLSLaunchAsync)
 
 LSApplicationParameters LPARAMS = {0, DEFAULT_LAUNCH_FLAGS, NULL, NULL, NULL, NULL, NULL};
