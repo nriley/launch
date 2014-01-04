@@ -24,9 +24,6 @@
 #include <mach-o/arch.h>
 #include <mach-o/loader.h>
 #include <Carbon/Carbon.h>
-#include <CoreServices/CoreServices.h>
-#include <CoreFoundation/CoreFoundation.h>
-#include <ApplicationServices/ApplicationServices.h>
 
 #ifndef BROKEN_AUTHORIZATION
 #include <Security/Authorization.h>
@@ -43,13 +40,14 @@ const char *APP_NAME;
 struct {
     OSType creator;
     CFStringRef bundleID, name;
+    Boolean appSpecified;
     Boolean forceURLs;
     enum { ACTION_FIND, ACTION_FIND_ITEMS,
 	   ACTION_OPEN, ACTION_OPEN_ITEMS, 
 	   ACTION_INFO_ITEMS, ACTION_LAUNCH_URLS } action;
 } OPTS = 
 {
-    kLSUnknownCreator, NULL, NULL, false,
+    kLSUnknownCreator, NULL, NULL, false, false,
     ACTION_DEFAULT
 };
 
@@ -88,10 +86,6 @@ static errList ERRS = {
     { errAuthorizationDenied, "authorization denied" },
     { errAuthorizationCanceled, "authentication was cancelled" },
 #endif
-    // Internet Config errors
-    { icPrefNotFoundErr, "no helper application is defined for the URL's scheme" },
-    { icNoURLErr, "not a URL" },
-    { icInternalErr, "internal Internet Config error" },
     // Misc. errors
     { nsvErr, "the volume cannot be found (buggy filesystem?)" },
     { procNotFound, "unable to connect to system service.\nAre you logged in?" },
@@ -102,7 +96,7 @@ static errList ERRS = {
 };
 
 void usage() {
-    fprintf(stderr, "usage: %s [-npswbmhLU] [-c creator] [-i bundleID] [-u URL] [-a name|path] [-o argument] [item ...] [-]\n"
+    fprintf(stderr, "usage: %s [-nplswbmhLU] [-c creator] [-i bundleID] [-u URL] [-a name|path] [-o argument] [item ...] [-]\n"
                     "   or: %s [-npflswbmhLU] "
                     "[-o argument] "
                     "item ...\n", APP_NAME, APP_NAME);
@@ -353,7 +347,6 @@ void getargs(int argc, char * const argv[]) {
     extern int optind;
     int ch;
     OSStatus err;
-    Boolean appSpecified = false;
 
     if (argc == 1) usage();
     
@@ -409,20 +402,25 @@ void getargs(int argc, char * const argv[]) {
         case 'c':
             if (strlen(optarg) != 4) errexit("creator (argument of -c) must be four characters long");
             OPTS.creator = htonl(*(OSTypePtr)optarg);
-	    appSpecified = true;
+	    OPTS.appSpecified = true;
             break;
         case 'i':
             OPTS.bundleID = CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8);
-	    appSpecified = true;
+	    OPTS.appSpecified = true;
             break;
         case 'a':
-            err = FSPathMakeRef((UInt8 *)optarg, &APPLICATION, NULL);
-            if (err == noErr) {
+            { CFURLRef appURL = CFURLCreateFromFileSystemRepresentation(NULL, (UInt8 *)optarg, strlen(optarg), false);
+              if (appURL != NULL) {
+                  OPTS.appSpecified = CFURLGetFSRef(appURL, &APPLICATION);
+                  CFRelease(appURL);
+              }
+            }
+            if (OPTS.appSpecified) {
                 LPARAMS.application = &APPLICATION;
             } else {
                 OPTS.name = CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8);
+                OPTS.appSpecified = true;
             }
-            appSpecified = true;
             break;
 	case 'u':
             { CFStringRef str = CFStringCreateWithCString(NULL, optarg, kCFStringEncodingUTF8);
@@ -434,7 +432,7 @@ void getargs(int argc, char * const argv[]) {
               CFRelease(appURL);
             }
             LPARAMS.application = &APPLICATION;
-	    appSpecified = true;
+	    OPTS.appSpecified = true;
 	    break;
         case 'o':
             if (LPARAMS.argv == NULL)
@@ -455,8 +453,8 @@ void getargs(int argc, char * const argv[]) {
     
     if (OPTS.creator == kLSUnknownCreator && OPTS.bundleID == NULL && OPTS.name == NULL) {
 	if (argc == 0 && LPARAMS.application == NULL)
-	    errexit("must specify an application by -u, or one or more of -c, -i, -a");
-        if (!appSpecified) {
+	    errexit("without items, must specify an application by -u, or one or more of -c, -i, -a");
+        if (!OPTS.appSpecified) {
             if (OPTS.action == ACTION_FIND)
                 OPTS.action = ACTION_FIND_ITEMS;
             if (OPTS.action == ACTION_OPEN)
@@ -467,10 +465,7 @@ void getargs(int argc, char * const argv[]) {
 	    errexit("application URL (argument of -u) incompatible with matching by -c, -i, -a");
     }
 
-    if (OPTS.action == ACTION_LAUNCH_URLS && appSpecified)
-        errexit("launching URLs with a given application is not supported; try without -l");
-
-    if (OPTS.action == ACTION_INFO_ITEMS && appSpecified)
+    if (OPTS.action == ACTION_INFO_ITEMS && OPTS.appSpecified)
 	errexit("can't get information (-f) on item(s) using an application (-u, -c, -i, -a)");
 
     if (argc == 0 && OPTS.action == ACTION_OPEN && LPARAMS.flags & kLSLaunchAndPrint)
@@ -924,29 +919,9 @@ void printInfoFromURL(CFURLRef url, void *context) {
     }
 }
 
-
-void launchURL(CFURLRef url, ICInstance icInst) {
-    CFStringRef urlStr = CFURLGetString(url);
-    static char strBuffer[STRBUF_LEN];
-    long strStart, strEnd;
-    OSStatus err;
-
-    strBuffer[0] = '\0';
-    CFStringGetCString(urlStr, strBuffer, STRBUF_LEN, CFStringGetSystemEncoding()); // XXX no idea what encoding ICLaunchURL is supposed to take; leave as is for now
-    strStart = 0;
-    strEnd = strlen(strBuffer);
-    err = ICLaunchURL(icInst, "\p", strBuffer, strEnd, &strStart, &strEnd);
-    if (err != noErr) {
-        fprintf(stderr, "%s: unable to launch URL <%s>: %s\n", APP_NAME, strBuffer, osstatusstr(err));
-    }
-    
-    CFRelease(urlStr);
-}
-
 OSStatus openItems(void) {
     if (ITEMS == NULL)
         ITEMS = CFArrayCreate(NULL, NULL, 0, NULL);
-    // CFShow(LPARAMS.argv);
     return LSOpenURLsWithRole(ITEMS, kLSRolesAll, NULL, &LPARAMS, NULL, 0);
 }
 
@@ -969,8 +944,7 @@ int main (int argc, char * const argv[]) {
     APP_NAME = argv[0];
     getargs(argc, argv);
 
-    if (OPTS.action == ACTION_FIND || OPTS.action == ACTION_OPEN) {
-        if (LPARAMS.application != NULL) goto findOK; // already have an application FSRef
+    if (OPTS.appSpecified && LPARAMS.application == NULL) {
 	err = LSFindApplicationForInfo(OPTS.creator, OPTS.bundleID, OPTS.name, &APPLICATION, NULL);
         LPARAMS.application = &APPLICATION;
         
@@ -1002,20 +976,14 @@ int main (int argc, char * const argv[]) {
 	err = openItems();
 	if (err != noErr) osstatusexit(err, "can't open items");
 	break;
+    case ACTION_LAUNCH_URLS:
+        err = openItems();
+        if (err != noErr) osstatusexit(err, "can't launch URLs");
+        break;
     case ACTION_INFO_ITEMS:
         CFArrayApplyFunction(ITEMS, CFRangeMake(0, CFArrayGetCount(ITEMS)),
 			     (CFArrayApplierFunction) printInfoFromURL, NULL);
 	break;
-    case ACTION_LAUNCH_URLS:
-    {
-        ICInstance icInst;
-        err = ICStart(&icInst, '\?\?\?\?'); // in case GCC trigraph handling is enabled
-        if (err != noErr) osstatusexit(err, "can't initialize Internet Config", argv[1]);
-        CFArrayApplyFunction(ITEMS, CFRangeMake(0, CFArrayGetCount(ITEMS)),
-                             (CFArrayApplierFunction) launchURL, icInst);
-        ICStop(icInst);
-        break;
-    }
     }
 
     if (TEMPFILE != NULL) {
