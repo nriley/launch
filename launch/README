@@ -1,7 +1,7 @@
 launch 1.2 [unreleased]
 ==========
 
-A command-line launcher for Mac OS X in the spirit of open(1).
+A command-line launcher for OS X in the spirit of open(1).
 
 Written by Nicholas Riley <mailto:launchsw@sabi.net>.
 Obtain updates from <http://sabi.net/nriley/software/>.
@@ -24,7 +24,6 @@ TextEdit (open -e), 'launch' does all this and:
   didn't get until Mac OS X 10.4
 - allows you to pipe output to GUI applictions
 - launches applications in the background
-- launches Carbon applications in Classic
 - displays file information including type, creator, bundle ID,
   data and resource fork sizes, dates and version
 - reports errors intelligibly
@@ -62,7 +61,7 @@ COMPILATION
 
 An Xcode project, 'launch.xcodeproj', is included.  A precompiled
 Universal binary is also provided.  'launch' was developed and tested
-under Mac OS X 10.5.2 with Xcode 3.1, and does not require any
+under OS X 10.8.5 with Xcode 5.0.2, and does not require any
 additional software to build.
 
 USAGE
@@ -81,8 +80,8 @@ Some examples:
 % ls -l | launch -c CWIE -
 [CodeWarrior IDE opens with an untitled document containing the file list]
 
-% launch -i org.mozilla.camino http://www.apple.com/
-[Camino opens Apple's Web site]
+% launch -i org.mozilla.firefox http://www.apple.com/
+[Firefox opens Apple's Web site]
 
 % launch -l launchsw@sabi.net
 [Your preferred email client opens a new message to comment on launch]
@@ -99,7 +98,7 @@ Some examples:
 [...]
 
 A scripting example: a zsh function which provides an OS X wrapper
-around emacsclient and the Carbon build of GNU Emacs, using launch and
+around emacsclient and the Mac port of GNU Emacs, using launch and
 appswitch (another one of my command-line tools).
 
     e() {
@@ -116,15 +115,15 @@ FREQUENTLY ASKED QUESTIONS
 
 Q. How do I discover bundle IDs for applications?
 
-A. The -f option to launch can help.  Say you have OmniWeb in the
-/Applications/Internet folder, and want to find out its bundle ID.
-Type 'launch -f', and drop the OmniWeb icon on Terminal:
+A. The -f option to launch can help.  Say you have Messages in your
+/Applications folder, and want to find out its bundle ID.  Type
+'launch -f', and drop the Messages icon on the Terminal window:
 
-% launch -f /Applications/Internet/OmniWeb.app
-/Applications/Internet/OmniWeb.app: scriptable Mac OS X application package 
-        type: 'APPL'    creator: 'OWEB'
-        architecture: PowerPC, Intel 80x86
-        bundle ID: com.omnigroup.OmniWeb5
+% launch -f /Applications/Messages.app
+/Applications/Messages.app: scriptable Mac OS X application package
+	type: 'APPL'	creator: 'fez!'
+	architecture: Intel x86-64
+	bundle ID: com.apple.iChat
 
 Note that bundle IDs are not case-sensitive: com.barebones.BBEdit is
 the same as com.barebones.bbedit.
@@ -227,7 +226,9 @@ VERSION HISTORY
    10.8
  - read Info.plists embedded in all Mach-O binaries (e.g. hdiutil)
  - display alias targets
- - now requires Mac OS X 10.6 or later
+ - remove support for Classic
+ - restore -o: pass command-line arguments, works in 10.5 and later
+ - now requires OS X 10.8 or later
 1.1 - 30 October 2006
  - -L: send "launch" (ascr/noop) event to app, bypasses automatic
    opening of untitled document, etc.
