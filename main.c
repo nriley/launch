@@ -534,7 +534,6 @@ Boolean stringFromURLIsRemote(CFURLRef url, char *strBuffer) {
     if (isRemote) {
         CFStringRef urlString = CFURLGetString(url);
 	CFStringGetCString(urlString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8);
-	CFRelease(urlString);
     } else {
 	if (CFURLGetFileSystemRepresentation(url, false, (UInt8 *)strBuffer, STRBUF_LEN)) {
 	    if (strBuffer[0] == '.' && strBuffer[1] == '/') {
