@@ -185,7 +185,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				INSTALL_PATH = "\U0001/usr/local/bin";
+				INSTALL_PATH = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = launch;
 				SDKROOT = macosx10.8;
