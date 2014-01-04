@@ -30,8 +30,8 @@ TextEdit (open -e), 'launch' does all this and:
 - and much more!
 
 'launch' is useful by itself, but is even better when used in scripts.
-Assign a shell command to your favorite Mac OS text, graphics or
-resource editor.  Go to your favorite Web site with a few keystrokes.
+Assign a shell command to your favorite OS X text or graphics editor.
+Go to your favorite Web site with a few keystrokes.
 
 Like 'open', 'launch' provides one half of the round-trip between
 Terminal.app and the Finder.  You can drag and drop icons or proxy icons
@@ -77,8 +77,8 @@ Some examples:
 % launch -pbc 'R*ch' test.txt
 [BBEdit starts printing test.txt in the background]
 
-% ls -l | launch -c CWIE -
-[CodeWarrior IDE opens with an untitled document containing the file list]
+% ls -l | launch -c '!Rch' -
+[TextWrangler opens with an untitled document containing the file list]
 
 % launch -i org.mozilla.firefox http://www.apple.com/
 [Firefox opens Apple's Web site]
@@ -87,14 +87,14 @@ Some examples:
 [Your preferred email client opens a new message to comment on launch]
 
 % launch -f /Applications/Preview.app
-/Applications/Preview.app: Mac OS X application package
-        type: 'APPL'    creator: 'prvw'
-        architecture: Intel 80x86, PowerPC
-        bundle ID: com.apple.Preview
-        version: 3.0.8
-        kind: Application
-        content type ID: com.apple.application-bundle
-        contents: 1 item
+/Applications/Preview.app: OS X application package
+	type: 'APPL'	creator: 'prvw'
+	architecture: Intel x86-64
+	bundle ID: com.apple.Preview
+	version: 6.0.1
+	kind: Application
+	content type ID: com.apple.application-bundle
+	contents: 1 item
 [...]
 
 A scripting example: a zsh function which provides an OS X wrapper
@@ -120,7 +120,7 @@ A. The -f option to launch can help.  Say you have Messages in your
 'launch -f', and drop the Messages icon on the Terminal window:
 
 % launch -f /Applications/Messages.app
-/Applications/Messages.app: scriptable Mac OS X application package
+/Applications/Messages.app: scriptable OS X application package
 	type: 'APPL'	creator: 'fez!'
 	architecture: Intel x86-64
 	bundle ID: com.apple.iChat
@@ -137,8 +137,7 @@ support stationery respond to it by creating a new untitled document
 with the contents of the stationery.  Most Cocoa applications, such as
 TextEdit, do not support stationery.  (Omni Group applications are a
 notable exception.)  If you're looking for a text editor which
-supports stationery, try BBEdit, Tex-Edit Plus, the CodeWarrior IDE,
-or almost any other Carbon editor.
+supports stationery, try BBEdit or TextWrangler.
 
 For the curious: launch processes input by simultaneously reading it
 and writing to a temporary stationery file.  Once reading is complete,
@@ -154,17 +153,18 @@ given creator (or -f with -i for a bundle ID)?
 A. This feature may be added to a later version (or add it yourself!),
 but there is a workaround.  Instead of:
 
-% launch -f -c 'Doug'
+% launch -f -c 'sprf'
 launch: can't get information (-f) on item(s) using an application (-u, -c, -i, -a)
 
 use:
 
 % launch -f "`launch -nc 'Doug'`"
-/Volumes/GrayApps/Utilities/Resorcerer 2.4/Resorcerer: scriptable Mac OS X application [Carbon, prefers native OS X]
-        type: 'APPL'    creator: 'Doug'
-        bundle ID: com.mathemaesthetics.resorcerer
-        version: 2.4 [0x2418010 = 37847056]
-        kind: Application
+/Applications/System Preferences.app: scriptable OS X application package
+	type: 'APPL'	creator: 'sprf'
+	architecture: Intel 80x86, Intel x86-64
+	bundle ID: com.apple.systempreferences
+	version: 12.0 [0x12008000 = 302022656]
+	kind: Application
 [...]
 
 
@@ -185,8 +185,8 @@ Are you logged in? (-600)
 
 In order to perform certain operations, launch needs to talk to
 various system services owned by the currently logged-on user.  If you
-aren't using 'launch' from a terminal currently logged into the Mac OS
-X GUI, certain operations may not work.  Try opening Terminal, creating
+aren't using 'launch' from a terminal currently logged into the OS X GUI,
+certain operations may not work.  Try opening Terminal, creating
 a new terminal window, and trying again.
 
 Another possibility is to create your own interprocess messaging.
@@ -222,12 +222,12 @@ VERSION HISTORY
 ---------------
 
 1.2 - unreleased
- - update error codes and eliminate use of deprecated API for OS X
-   10.8
- - read Info.plists embedded in all Mach-O binaries (e.g. hdiutil)
- - display alias targets
+ - update error codes
+ - eliminate use of deprecated API
+ - read Info.plists embedded in Mach-O binaries
+ - display alias targets, where available, with -f
  - remove support for Classic
- - restore -o: pass command-line arguments, works in 10.5 and later
+ - restore -o: pass command-line arguments, fixed in 10.5 and later
  - now requires OS X 10.8 or later
 1.1 - 30 October 2006
  - -L: send "launch" (ascr/noop) event to app, bypasses automatic
@@ -235,8 +235,8 @@ VERSION HISTORY
  - -o: pass command-line arguments (broken, r. 4474993)
  - display content type ID (UTI)    
  - display architecture of Mach-O files
- - switched to new LSOpen APIs (now requires Mac OS X 10.4 or later)
- - switched to new date formatting APIs (the old ones are deprecated)
+ - switch to new LSOpen APIs (now requires Mac OS X 10.4 or later)
+ - switch to new date formatting APIs (the old ones are deprecated)
  - for compatibility with open(1), take app path as argument to -a
  - Universal Binary, compatible with Intel Macs [Peter Hosey]
 1.0.1 - 3 April 2005
@@ -257,23 +257,23 @@ VERSION HISTORY
  - work around CFBundle bug to report bundle identifiers and versions
    from resource forks of unpackaged Carbon applications and Classic
    applications [Lloyd Dupont]
- - added descriptions for more error codes and clarified error
+ - add descriptions for more error codes and clarified error
    reporting
  - output all errors to stderr
  - provide better errors for -X option
- - restored -m: OS X bug is fixed in Panther
- - fixed a couple of tiny memory leaks
- - added man page [Hisashi T Fujinaka]
+ - restore -m: OS X bug is fixed in Panther
+ - fix a couple of tiny memory leaks
+ - add man page [Hisashi T Fujinaka]
  - work around bug in LSOpenFromURLSpec opening multiple items in
    Mac OS X 10.3
 1.0b2 - 9 March 2003
- - fixed install instructions to create /usr/local/bin if needed
+ - fix install instructions to create /usr/local/bin if needed
  - show bundle version with text, hex and integer representations
 1.0b1 - 14 December 2002
  - accept "slack" (default http) URLs and email addresses with -l
  - accept input from stdin with '-'
  - open URLs with arbitrary applications when specified without -l
- - builds without compiler warnings
+ - build without compiler warnings
 1.0a9 - 2 April 2002
  - license, comments changes
 1.0a8 - 29 March 2002
