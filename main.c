@@ -429,9 +429,9 @@ void getargs(int argc, char * const argv[]) {
 	      CFURLRef appURL = CFURLCreateWithString(NULL, str, NULL);
   	      if (appURL == NULL)
 		  errexit("invalid URL (argument of -u)");
-	      err = CFURLGetFSRef(appURL, &APPLICATION);
-	      if (err != noErr)
-                  osstatusexit(err, "can't find application (argument of -u)");
+	      if (!CFURLGetFSRef(appURL, &APPLICATION))
+                  errexit("can't find application (argument of -u)");
+              CFRelease(appURL);
             }
             LPARAMS.application = &APPLICATION;
 	    appSpecified = true;
