@@ -74,7 +74,7 @@ static errList ERRS = {
     { kLSUnknownErr, "unknown Launch Services error" },
     { kLSNotAnApplicationErr, "item is not an application" },
     { kLSDataUnavailableErr, "item metadata is unavailable" },
-    { kLSApplicationNotFoundErr, "application not found for document" },
+    { kLSApplicationNotFoundErr, "application not found" },
     { kLSUnknownTypeErr, "cannot determine item kind" },
     { kLSLaunchInProgressErr, "application is being opened; please try again after the application is open" },
     { kLSServerCommunicationErr, "unable to connect to Launch Services.\nAre you logged in?" },
