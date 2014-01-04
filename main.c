@@ -346,7 +346,6 @@ void getargs(int argc, char * const argv[]) {
     extern char *optarg;
     extern int optind;
     int ch;
-    OSStatus err;
 
     if (argc == 1) usage();
     
