@@ -110,7 +110,7 @@ void usage() {
         "  -n            print matching paths/URLs instead of opening them\n"
         "  -p            ask application(s) to print document(s)\n"
 	"  -f            display information about item(s)\n"
-        "  -l            launch URLs (e.g. treat http:// URLs as Web sites, not WebDAV)\n"
+        "  -l            launch URLs (interpret schemeless as http/mailto, not file)\n"
 #ifndef BROKEN_AUTHORIZATION
         "  -s            launch target(s) as superuser (authenticating if needed)\n"
 #endif
@@ -121,12 +121,12 @@ void usage() {
 	"  -L            suppress normal opening behavior (e.g. untitled window)\n"
 	"  -U            interpret items as URLs, even if same-named files exist\n"
         "  -c creator    match application by four-character creator code ('ToyS')\n"
-        "  -i bundle ID  match application by bundle identifier (com.apple.scripteditor)\n"
+        "  -i bundle ID  match application by bundle identifier (com.apple.ScriptEditor2)\n"
         "  -u URL        open application at file:// URL (NOT RECOMMENDED for scripts)\n"
-        "  -a name|path  match application by name/path (NOT RECOMMENDED, very fragile)\n"
+        "  -a name|path  match application by name/path (NOT RECOMMENDED for scripts)\n"
         "  -o argument   pass argument to application (may be specified more than once)\n"
-        "'document' may be a file, folder, or disk - whatever the application can open.\n"
-        "'item' may be a file, folder, disk, or URL.\n\n");
+        "A document may be a file, folder, or disk - whatever the application can open.\n"
+        "An item may be a file, folder, disk, or URL.\n\n");
     fprintf(stderr, "launch "VERSION" (c) 2001-14 Nicholas Riley <http://sabi.net/nriley/software/>.\n"
 	            "Please send bugs, suggestions, etc. to <launchsw@sabi.net>.\n");
 
