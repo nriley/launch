@@ -132,24 +132,39 @@ void usage() {
     exit(1);
 }
 
+char * const FAILED_STR = "(unable to retrieve error message)";
+
 char *osstatusstr(OSStatus err) {
     errRec *rec;
     const char *errDesc = "unknown error";
-    char * const failedStr = "(unable to retrieve error message)";
     static char *str = NULL;
-    size_t len;
-    if (str != NULL && str != failedStr) free(str);
+    size_t size;
+    if (str != NULL && str != FAILED_STR) free(str);
     for (rec = &(ERRS[0]) ; rec->status != 0 ; rec++)
         if (rec->status == err) {
             errDesc = rec->desc;
             break;
         }
-    len = strlen(errDesc) + 10 * sizeof(char);
-    str = (char *)malloc(len);
+    size = strlen(errDesc) + 10 * sizeof(char);
+    str = (char *)malloc(size);
     if (str != NULL)
-        snprintf(str, len, "%s (%ld)", errDesc, err);
+        snprintf(str, size, "%s (%ld)", errDesc, err);
     else
-        str = failedStr;
+        str = FAILED_STR;
+    return str;
+}
+
+char *cferrorstr(CFErrorRef error) {
+    CFStringRef string = CFErrorCopyFailureReason(error);
+    if (string != NULL)
+        string = CFErrorCopyDescription(error); // will never return NULL
+    static char *str = NULL;
+    if (str != NULL && str != FAILED_STR) free(str);
+    CFIndex size = CFStringGetMaximumSizeForEncoding(CFStringGetLength(string), kCFStringEncodingUTF8);
+    str = malloc(size);
+    if (str == NULL || !CFStringGetCString(string, str, size, kCFStringEncodingUTF8))
+        str = FAILED_STR;
+    CFRelease(string);
     return str;
 }
 
@@ -889,20 +904,23 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	printMoreInfoForRef(fsr);
     }
 
-    // alias target (note: may modify fsr and url)
+    // alias target (note: may modify url)
     if (info.flags & kLSItemInfoIsAliasFile && haveFSRef) {
-        Boolean targetIsFolder, wasAliased;
-        err = FSResolveAliasFileWithMountFlags(&fsr, false, &targetIsFolder, &wasAliased, kResolveAliasFileNoUI);
-        if (err != noErr)
-            printf("\t[can't resolve alias: %s]\n", osstatusstr(err));
-	else if (wasAliased) {
-	    url = CFURLCreateFromFSRef(NULL, &fsr);
-	    if (url != NULL) {
+        CFErrorRef error;
+        CFDataRef bookmarkData = CFURLCreateBookmarkDataFromFile(NULL, url, &error);
+        if (bookmarkData == NULL) {
+            printf("\t[can't decode alias: %s]\n", cferrorstr(error));
+        } else {
+            url = CFURLCreateByResolvingBookmarkData(NULL, bookmarkData, kCFBookmarkResolutionWithoutUIMask | kCFBookmarkResolutionWithoutUIMask, NULL, NULL, NULL, &error);
+            if (url == NULL) {
+                printf("\t[can't resolve alias: %s]\n", cferrorstr(error));
+            } else {
 		printf("\ttarget: ");
 		printPathFromURL(url, stdout);
 		CFRelease(url);
-	    }
-	}
+            }
+            CFRelease(bookmarkData);
+        }
     }
 }
 
