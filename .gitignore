@@ -1,0 +1,11 @@
+build
+xcuserdata
+.DS_Store
+*.pbxuser
+*.perspectivev3
+*.mode?v3
+*~
+\#*
+.#*
+launch-*
+launch/launch
