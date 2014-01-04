@@ -157,7 +157,7 @@ char *osstatusstr(OSStatus err) {
 
 char *cferrorstr(CFErrorRef error) {
     CFStringRef string = CFErrorCopyFailureReason(error);
-    if (string != NULL)
+    if (string == NULL)
         string = CFErrorCopyDescription(error); // will never return NULL
     static char *str = NULL;
     if (str != NULL && str != FAILED_STR) free(str);
