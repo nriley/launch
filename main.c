@@ -53,7 +53,7 @@ struct {
     ACTION_DEFAULT
 };
 
-#define DEFAULT_LAUNCH_FLAGS (kLSLaunchNoParams | kLSLaunchStartClassic | kLSLaunchAsync)
+#define DEFAULT_LAUNCH_FLAGS (kLSLaunchNoParams | kLSLaunchAsync)
 
 LSApplicationParameters LPARAMS = {0, DEFAULT_LAUNCH_FLAGS, NULL, NULL, NULL, NULL, NULL};
 CFArrayRef ITEMS = NULL;
@@ -450,7 +450,7 @@ void getargs(int argc, char * const argv[]) {
     
     if ( (OPTS.action == ACTION_FIND || OPTS.action == ACTION_LAUNCH_URLS ||
 	  OPTS.action == ACTION_INFO_ITEMS) && LPARAMS.flags != DEFAULT_LAUNCH_FLAGS)
-        errexit("options -s, -b, -m, -h, -C, -X apply to application launch (not -n, -f or -l)");
+        errexit("options -s, -b, -m, -h apply to application launch (not -n, -f or -l)");
     
     if (OPTS.creator == kLSUnknownCreator && OPTS.bundleID == NULL && OPTS.name == NULL) {
 	if (argc == 0 && LPARAMS.application == NULL)
