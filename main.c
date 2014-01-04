@@ -357,7 +357,7 @@ void getargs(int argc, char * const argv[]) {
 
     if (argc == 1) usage();
     
-    while ( (ch = getopt(argc, argv, "npflswbmhCXLUc:i:u:a:o:")) != -1) {
+    while ( (ch = getopt(argc, argv, "npflswbmhLUc:i:u:a:o:")) != -1) {
         switch (ch) {
         case 'n':
             if (OPTS.action != ACTION_DEFAULT) errexit("choose only one of -n, -p, -f, -l options");
