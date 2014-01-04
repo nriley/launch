@@ -2,7 +2,7 @@
  launch - a smarter 'open' replacement
  Nicholas Riley <launchsw@sabi.net>
 
- Copyright (c) 2001-13, Nicholas Riley
+ Copyright (c) 2001-14, Nicholas Riley
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@
 
 const char *APP_NAME;
 
-#define VERSION "1.1.1d5"
+#define VERSION "1.2d1"
 
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
@@ -133,7 +133,7 @@ void usage() {
 #endif
         "'document' may be a file, folder, or disk - whatever the application can open.\n"
         "'item' may be a file, folder, disk, or URL.\n\n");
-    fprintf(stderr, "launch "VERSION" (c) 2001-09 Nicholas Riley <http://web.sabi.net/nriley/software/>.\n"
+    fprintf(stderr, "launch "VERSION" (c) 2001-14 Nicholas Riley <http://sabi.net/nriley/software/>.\n"
 	            "Please send bugs, suggestions, etc. to <launchsw@sabi.net>.\n");
 
     exit(1);

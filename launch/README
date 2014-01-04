@@ -1,10 +1,10 @@
-launch 1.1.1 [unreleased]
-============
+launch 1.2 [unreleased]
+==========
 
 A command-line launcher for Mac OS X in the spirit of open(1).
 
 Written by Nicholas Riley <mailto:launchsw@sabi.net>.
-Obtain updates from <http://web.sabi.net/nriley/software/>.
+Obtain updates from <http://sabi.net/nriley/software/>.
 
 WHAT IS IT?
 -----------
@@ -222,7 +222,7 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
-1.1.1 - unreleased
+1.2 - unreleased
  - update error codes and eliminate use of deprecated API for OS X
    10.8
  - read Info.plists embedded in all Mach-O binaries (e.g. hdiutil)
