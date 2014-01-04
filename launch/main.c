@@ -77,7 +77,7 @@ static errList ERRS = {
     { kLSUnknownTypeErr, "cannot determine item kind" },
     { kLSLaunchInProgressErr, "application is being opened; please try again after the application is open" },
     { kLSServerCommunicationErr, "unable to connect to Launch Services.\nAre you logged in?" },
-    { kLSIncompatibleSystemVersionErr, "application is incompatible with this version of Mac OS X" },
+    { kLSIncompatibleSystemVersionErr, "application is incompatible with this version of OS X" },
     { kLSNoLaunchPermissionErr, "no permission to launch this application", },
     { kLSNoExecutableErr, "application package contains no executable, or an unusable executable" },
     { kLSNoClassicEnvironmentErr, "Classic environment required but not available" },
@@ -647,7 +647,7 @@ void printMoreInfoForRef(FSRef fsr) {
     
     printDateTime("created", &fscInfo.createDate, "", true);
     printDateTime("modified", &fscInfo.contentModDate, "", true);
-    printDateTime("accessed", &fscInfo.accessDate, " [only updated by Mac OS X]", false);
+    printDateTime("accessed", &fscInfo.accessDate, " [only updated by OS X]", false);
     printDateTime("backed up", &fscInfo.backupDate, "", false);
 }
 
@@ -773,7 +773,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
     // modifiers
     if (info.flags & kLSItemInfoIsInvisible) printf("invisible ");
     if (info.flags & kLSItemInfoAppIsScriptable) printf("scriptable ");
-    if (info.flags & kLSItemInfoIsNativeApp) printf("Mac OS X ");
+    if (info.flags & kLSItemInfoIsNativeApp) printf("OS X ");
     if (info.flags & kLSItemInfoIsClassicApp) printf("Classic ");
     
     // kind
