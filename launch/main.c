@@ -101,8 +101,8 @@ static errList ERRS = {
 };
 
 void usage() {
-    fprintf(stderr, "usage: %s [-npswbmhCXLU] [-c creator] [-i bundleID] [-u URL] [-a name|path] [-o argument] [item ...] [-]\n"
-                    "   or: %s [-npflswbmhCXLU] "
+    fprintf(stderr, "usage: %s [-npswbmhLU] [-c creator] [-i bundleID] [-u URL] [-a name|path] [-o argument] [item ...] [-]\n"
+                    "   or: %s [-npflswbmhLU] "
                     "[-o argument] "
                     "item ...\n", APP_NAME, APP_NAME);
     fprintf(stderr,
@@ -117,8 +117,6 @@ void usage() {
         "  -b            launch application in the background\n"
         "  -m            launch application again, even if already running\n"
         "  -h            hide application once it's finished opening\n"
-        "  -C            force CFM/PEF Carbon application to launch in Classic\n"
-        "  -X            don't start Classic for this app if Classic isn't running\n"
 	"  -L            suppress normal opening behavior (e.g. untitled window)\n"
 	"  -U            interpret items as URLs, even if same-named files exist\n"
         "  -c creator    match application by four-character creator code ('ToyS')\n"
@@ -384,8 +382,6 @@ void getargs(int argc, char * const argv[]) {
         case 'b': LPARAMS.flags |= kLSLaunchDontSwitch; break; // open in background
         case 'm': LPARAMS.flags |= kLSLaunchNewInstance; break;// open multiple
         case 'h': LPARAMS.flags |= kLSLaunchAndHide; break;    // hide once launched
-        case 'C': LPARAMS.flags |= kLSLaunchInClassic; break;  // force Classic
-        case 'X': LPARAMS.flags ^= kLSLaunchStartClassic; break;// don't start Classic for app
 	case 'L':
 	{
 	    OSStatus err;
