@@ -819,31 +819,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
     } else if (info.flags & kLSItemInfoIsPackage || !haveFSRef) {
 	printf("\t[can't access package contents]\n");
     } else if (haveFSRef) {
-	SInt16 resFork = FSOpenResFile(&fsr, fsRdPerm);
-	CFPropertyListRef infoPlist = NULL;
-	if ( (err = ResError()) == noErr) {
-	    Handle h = Get1Resource('plst', 0);
-	    if (h == NULL) {
-		err = ResError();
-		if (err != noErr && err != resNotFound)
-		    osstatusexit(err, "unable to read 'plst' 0 resource");
-	    } else {
-		CFDataRef plstData = CFDataCreate(NULL, (UInt8 *)*h, GetHandleSize(h));
-		CFStringRef error = NULL;
-		infoPlist = CFPropertyListCreateFromXMLData(NULL, plstData, kCFPropertyListImmutable, &error);
-		if (plstData != NULL) CFRelease(plstData);
-		if (infoPlist == NULL) {
-		    printf("\t['plst' 0 resource invalid: %s]\n", utf8StringFromCFStringRef(error));
-		    CFRelease(error);
-		}
-	    }
-	}
-	if (infoPlist == NULL) {
-	    // this function should handle the 'plst' 0 case too, but it doesn't provide error messages; however, it handles the case of an unbundled Mach-O binary, so it is useful as a fallback
-	    infoPlist = CFBundleCopyInfoDictionaryForURL(url);
-	    if (infoPlist == NULL && info.flags & kLSItemInfoIsApplication && resFork == -1)
-		printf("\t[can't open resource fork: %s]\n", osstatusstr(err));
-	}
+	CFPropertyListRef infoPlist = CFBundleCopyInfoDictionaryForURL(url);
 	if (infoPlist != NULL) {
 	    // mimic CFBundle logic above
 	    bundleID = CFDictionaryGetValue(infoPlist, kCFBundleIdentifierKey);
@@ -853,20 +829,6 @@ void printInfoFromURL(CFURLRef url, void *context) {
 		version = CFDictionaryGetValue(infoPlist, kCFBundleVersionKey);
 	    if (version != NULL) CFRetain(version);
 	    CFRelease(infoPlist);
-	}
-	if (resFork != -1) {
-	    VersRecHndl vers = (VersRecHndl)Get1Resource('vers', 1);
-	    if (vers == NULL) {
-		err = ResError();
-		if (err != noErr && err != resNotFound)
-		    osstatusexit(err, "unable to read 'vers' 1 resource");
-	    } else {
-		if (version == NULL) { // prefer 'plst' version
-		    version = CFStringCreateWithPascalString(NULL, vers[0]->shortVersion, CFStringGetSystemEncoding()); // XXX use country code instead?
-		}
-		intVersion = ((NumVersionVariant)vers[0]->numericVersion).whole;
-	    }
-	    CloseResFile(resFork);
 	}
 	printExecutableArchitectures(url, false);
     }
