@@ -775,8 +775,8 @@ void printInfoFromURL(CFURLRef url, void *context) {
     else if (info.flags & kLSItemInfoIsApplication) printf("application ");
     else if (info.flags & kLSItemInfoIsPackage) printf("non-application ");
     else if (info.flags & kLSItemInfoIsContainer) printf("folder");
-    else if (info.flags & kLSItemInfoIsAliasFile) printf("alias");
     else if (info.flags & kLSItemInfoIsSymlink) printf("symbolic link");
+    else if (info.flags & kLSItemInfoIsAliasFile) printf("alias");
     else if (info.flags & kLSItemInfoIsPlainFile) printf("document");
     else printf("unknown file system entity");
 
