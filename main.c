@@ -95,7 +95,7 @@ static errList ERRS = {
     { 0, NULL }
 };
 
-void usage() {
+void __attribute__((__noreturn__)) usage() {
     fprintf(stderr, "usage: %s [-nplswbmhLU] [-c creator] [-i bundleID] [-u URL] [-a name|path] [-o argument] [item ...] [-]\n"
                     "   or: %s [-npflswbmhLU] "
                     "[-o argument] "
@@ -179,7 +179,7 @@ char *cferrorstr(CFErrorRef error) {
     return str;
 }
 
-void osstatusexit(OSStatus err, const char *fmt, ...) {
+void  __attribute__((__noreturn__)) osstatusexit(OSStatus err, const char *fmt, ...) {
     va_list ap;
     const char *errDesc = osstatusstr(err);
     va_start(ap, fmt);
@@ -189,7 +189,7 @@ void osstatusexit(OSStatus err, const char *fmt, ...) {
     exit(1);
 }
 
-void errexit(const char *fmt, ...) {
+void __attribute__((__noreturn__)) errexit(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     fprintf(stderr, "%s: ", APP_NAME);
