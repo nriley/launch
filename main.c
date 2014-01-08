@@ -913,10 +913,10 @@ void printMoreInfoForRef(FSRef fsr) {
         }
         printf("\n");
     }
-    
-    printDateTime("created", &fscInfo.createDate, "", true);
-    printDateTime("modified", &fscInfo.contentModDate, "", true);
-    printDateTime("accessed", &fscInfo.accessDate, " [only updated by OS X]", false);
+
+    printDateTime("created", &fscInfo.createDate, "", true); // XXX replace by kCFURLCreationDateKey
+    printDateTime("modified", &fscInfo.contentModDate, "", true); // XXX replace by kCFURLContentModificationDateKey
+    printDateTime("accessed", &fscInfo.accessDate, " [only updated by OS X]", false); // XXX replace by kCFURLContentAccessDateKey
     printDateTime("backed up", &fscInfo.backupDate, "", false);
 }
 
@@ -1046,22 +1046,51 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	osstatusexit(err, "unable to get information about '%s'", strBuffer);
 
     printf("%s: ", strBuffer);
-    
+
+    const CFStringRef KEYS[] = {
+        kCFURLIsSystemImmutableKey, kCFURLIsUserImmutableKey, //
+        kCFURLHasHiddenExtensionKey, //
+        kCFURLCreationDateKey, kCFURLContentAccessDateKey,
+        kCFURLContentModificationDateKey,
+        kCFURLLinkCountKey, kCFURLLabelNumberKey, kCFURLLocalizedLabelKey,
+        kCFURLIsExcludedFromBackupKey, //
+        kCFURLFileResourceTypeKey,
+        kCFURLFileSizeKey, kCFURLFileAllocatedSizeKey,
+        kCFURLTotalFileSizeKey, kCFURLTotalFileAllocatedSizeKey
+    };
+    CFArrayRef keys = CFArrayCreate(NULL, (const void **)&KEYS, sizeof(KEYS)/sizeof(CFStringRef *), NULL);
+    if (keys == NULL) {
+        printf("[can't get more information]\n");
+        return;
+    }
+    CFErrorRef error;
+    CFDictionaryRef props = CFURLCopyResourcePropertiesForKeys(url, keys, &error);
+    CFRelease(keys);
+    if (props == NULL) {
+        printf("[can't get more information: %s]\n", cferrorstr(error));
+        return;
+    }
+
     // modifiers
     if (info.flags & kLSItemInfoIsInvisible) printf("invisible ");
     if (info.flags & kLSItemInfoAppIsScriptable) printf("scriptable ");
     if (info.flags & kLSItemInfoIsNativeApp) printf("OS X ");
     if (info.flags & kLSItemInfoIsClassicApp) printf("Classic ");
-    
+
     // kind
+    CFTypeRef resourceType = CFDictionaryGetValue(props, kCFURLFileResourceTypeKey);
     if (info.flags & kLSItemInfoIsVolume) printf("volume");
     else if (info.flags & kLSItemInfoIsApplication) printf("application ");
     else if (info.flags & kLSItemInfoIsPackage) printf("non-application ");
     else if (info.flags & kLSItemInfoIsContainer) printf("folder");
     else if (info.flags & kLSItemInfoIsSymlink) printf("symbolic link");
     else if (info.flags & kLSItemInfoIsAliasFile) printf("alias");
+    else if (resourceType == kCFURLFileResourceTypeNamedPipe) printf("named pipe");
+    else if (resourceType == kCFURLFileResourceTypeCharacterSpecial) printf("character device");
+    else if (resourceType == kCFURLFileResourceTypeBlockSpecial) printf("block device");
+    else if (resourceType == kCFURLFileResourceTypeSocket) printf("socket");
     else if (info.flags & kLSItemInfoIsPlainFile) printf("document");
-    else printf("unknown file system entity");
+    else printf("unknown");
 
     if (info.flags & kLSItemInfoIsPackage) printf("package ");
 
@@ -1167,6 +1196,9 @@ void printInfoFromURL(CFURLRef url, void *context) {
     if (info.flags & kLSItemInfoIsVolume) {
         printMoreInfoForVolume(url);
     }
+
+    CFShow(props);
+    CFRelease(props);
 }
 
 OSStatus openItems(void) {
