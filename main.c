@@ -18,6 +18,7 @@
 #define BROKEN_AUTHORIZATION 1
 #define kComponentSignatureString "launch"
 
+#include <dirent.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <mach-o/fat.h>
@@ -921,20 +922,41 @@ void printMoreInfoForVolume(CFURLRef url) {
     CFRelease(props);
 }
 
-void printMoreInfoForRef(FSRef fsr) {
-    OSStatus err;
-    FSCatalogInfo fscInfo;
+Boolean valence(CFURLRef url, SInt64 *count) {
+    CFStringRef path = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
+    if (path == NULL)
+        return false;
 
-    err = FSGetCatalogInfo(&fsr, kFSCatInfoValence, &fscInfo, NULL, NULL, NULL);
-    if (err != noErr) osstatusexit(err, "unable to get catalog information for file");
+    static char strBuffer[STRBUF_LEN];
+    if (!CFStringGetFileSystemRepresentation(path, strBuffer, STRBUF_LEN))
+        return false;
 
-    if (fscInfo.nodeFlags & kFSNodeIsDirectoryMask) {
-        printf("\tcontents: ");
-	switch (fscInfo.valence) {
+    DIR *dir = opendir(strBuffer);
+    if (dir == NULL)
+        return false;
+
+    struct dirent *entry;
+    *count = 0;
+    while ( (entry = readdir(dir)) != NULL) {
+        if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+            continue;
+        (*count)++;
+    }
+    closedir(dir);
+
+    return true;
+}
+
+void printValence(CFURLRef url) {
+    SInt64 count;
+    Boolean success = valence(url, &count);
+    if (!success)
+        return;
+    printf("\tcontents: ");
+    switch (count) {
 	case 0: printf("zero items\n"); break;
 	case 1: printf("1 item\n"); break;
-	default: printf("%lu items\n", fscInfo.valence);
-	}
+	default: printf("%lld items\n", count);
     }
 }
 
@@ -1203,12 +1225,14 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	    printf("\tcontent type ID: %s\n", utf8StrFromCFString(kind));
 	    CFRelease(kind);
 	}
-	printMoreInfoForRef(fsr);
     }
 
-    // sizes
-    printSizesProp(props, kCFURLFileSizeKey, kCFURLFileAllocatedSizeKey, "data fork size");
-    printSizesProp(props, kCFURLTotalFileSizeKey, kCFURLTotalFileAllocatedSizeKey, "total file size");
+    if (resourceType == kCFURLFileResourceTypeDirectory) {
+        printValence(url);
+    } else {
+        printSizesProp(props, kCFURLFileSizeKey, kCFURLFileAllocatedSizeKey, "data fork size");
+        printSizesProp(props, kCFURLTotalFileSizeKey, kCFURLTotalFileAllocatedSizeKey, "total file size");
+    }
 
     // dates
     printDateProp(props, kCFURLCreationDateKey, "created");
