@@ -134,7 +134,10 @@ char *osstatusstr(OSStatus err) {
     const char *errDesc = "unknown error";
     static char *str = NULL;
     size_t size;
-    if (str != NULL && str != FAILED_STR) free(str);
+    if (str != NULL && str != FAILED_STR) {
+        free(str);
+        str = NULL;
+    }
     for (rec = &(ERRS[0]) ; rec->status != 0 ; rec++)
         if (rec->status == err) {
             errDesc = rec->desc;
@@ -149,17 +152,30 @@ char *osstatusstr(OSStatus err) {
     return str;
 }
 
+char *mallocedUTF8StrFromCFString(CFStringRef string) {
+    CFIndex size = CFStringGetMaximumSizeForEncoding(CFStringGetLength(string), kCFStringEncodingUTF8);
+    char *str = malloc(size);
+    if (str == NULL)
+        return NULL;
+    if (!CFStringGetCString(string, str, size, kCFStringEncodingUTF8)) {
+        free(str);
+        return NULL;
+    }
+    return str;
+}
+
 char *cferrorstr(CFErrorRef error) {
     CFStringRef string = CFErrorCopyFailureReason(error);
     if (string == NULL)
         string = CFErrorCopyDescription(error); // will never return NULL
     static char *str = NULL;
-    if (str != NULL && str != FAILED_STR) free(str);
-    CFIndex size = CFStringGetMaximumSizeForEncoding(CFStringGetLength(string), kCFStringEncodingUTF8);
-    str = malloc(size);
-    if (str == NULL || !CFStringGetCString(string, str, size, kCFStringEncodingUTF8))
-        str = FAILED_STR;
+    if (str != NULL && str != FAILED_STR) {
+        free(str);
+        str = NULL;
+    }
+    str = mallocedUTF8StrFromCFString(string) || FAILED_STR;
     CFRelease(string);
+    CFRelease(error);
     return str;
 }
 
@@ -645,10 +661,18 @@ void printMoreInfoForRef(FSRef fsr) {
     printDateTime("backed up", &fscInfo.backupDate, "", false);
 }
 
-const char *utf8StringFromCFStringRef(CFStringRef cfStr) {
+const char *utf8StrFromCFStringRef(CFStringRef string) {
     static char tmpBuffer[STRBUF_LEN];
-    CFStringGetCString(cfStr, tmpBuffer, STRBUF_LEN, kCFStringEncodingUTF8);
-    return tmpBuffer;
+    if (CFStringGetCString(string, tmpBuffer, STRBUF_LEN, kCFStringEncodingUTF8))
+        return tmpBuffer;
+
+    static char *str = NULL;
+    if (str != NULL) {
+        free(str);
+        str = NULL;
+    }
+    str = mallocedUTF8StrFromCFString(string);
+    return str;
 }
 
 const char *utf8StringFromOSType(OSType osType) {
@@ -661,7 +685,7 @@ const char *utf8StringFromOSType(OSType osType) {
 	strncpy(tmpBuffer, (const char *)&osType, 4);
 	return tmpBuffer;
     }
-    const char *buffer = utf8StringFromCFStringRef(typeStr);
+    const char *buffer = utf8StrFromCFStringRef(typeStr);
     CFRelease(typeStr);
     return buffer;
 }
@@ -834,11 +858,11 @@ void printInfoFromURL(CFURLRef url, void *context) {
     }
 
     if (bundleID != NULL) {
-	printf("\tbundle ID: %s\n", utf8StringFromCFStringRef(bundleID));
+	printf("\tbundle ID: %s\n", utf8StrFromCFStringRef(bundleID));
 	CFRelease(bundleID);
     }
     if (version != NULL) {
-	printf("\tversion: %s", utf8StringFromCFStringRef(version));
+	printf("\tversion: %s", utf8StrFromCFStringRef(version));
 	if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);
 	putchar('\n');
 	CFRelease(version);
@@ -846,15 +870,17 @@ void printInfoFromURL(CFURLRef url, void *context) {
 
     // kind string
     err = LSCopyKindStringForURL(url, &kind);
-    if (err != noErr) osstatusexit(err, "unable to get kind of '%s'", strBuffer);
-    printf("\tkind: %s\n", utf8StringFromCFStringRef(kind));
-    CFRelease(kind);
-    
+    if (err != fnfErr) { // returned on device nodes
+        if (err != noErr) osstatusexit(err, "unable to get kind of '%s'", strBuffer);
+        printf("\tkind: %s\n", utf8StrFromCFStringRef(kind));
+        CFRelease(kind);
+    }
+
     if (haveFSRef) {
 	// content type identifier (UTI)
 	err = LSCopyItemAttribute(&fsr, kLSRolesAll, kLSItemContentType, (CFTypeRef *)&kind);
 	if (err == noErr) {
-	    printf("\tcontent type ID: %s\n", utf8StringFromCFStringRef(kind));
+	    printf("\tcontent type ID: %s\n", utf8StrFromCFStringRef(kind));
 	    CFRelease(kind);
 	}
 	printMoreInfoForRef(fsr);
