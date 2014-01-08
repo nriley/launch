@@ -934,7 +934,7 @@ const char *utf8StrFromCFStringRef(CFStringRef string) {
     return str;
 }
 
-const char *utf8StringFromOSType(OSType osType) {
+const char *utf8StrFromOSType(OSType osType) {
     osType = ntohl(osType);
     CFStringRef typeStr = CFStringCreateWithBytes(NULL, (UInt8 *)&osType, 4, CFStringGetSystemEncoding(), false);
     if (typeStr == NULL) {
@@ -1099,8 +1099,8 @@ void printInfoFromURL(CFURLRef url, void *context) {
 
     printf("\n");
     if (!(info.flags & kLSItemInfoIsContainer) || info.flags & kLSItemInfoIsPackage) {
-	printf("\ttype: '%s'", utf8StringFromOSType(info.filetype));
-	printf("\tcreator: '%s'\n", utf8StringFromOSType(info.creator));
+	printf("\ttype: '%s'", utf8StrFromOSType(info.filetype));
+	printf("\tcreator: '%s'\n", utf8StrFromOSType(info.creator));
     }
 
     CFStringRef bundleID = NULL;
