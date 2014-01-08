@@ -1174,6 +1174,13 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	printMoreInfoForRef(fsr);
     }
 
+    beginBooleanPropItemList("attributes");
+    printPropItemIfYes(props, kCFURLIsSystemImmutableKey, "system immutable");
+    printPropItemIfYes(props, kCFURLIsUserImmutableKey, "user immutable");
+    printPropItemIfYes(props, kCFURLHasHiddenExtensionKey, "extension hidden");
+    printPropItemIfYes(props, kCFURLIsExcludedFromBackupKey, "excluded from backup");
+    endBooleanPropItemList("none");
+
     // alias target (note: may modify url)
     if (info.flags & kLSItemInfoIsAliasFile && haveFSRef) {
         CFErrorRef error;
