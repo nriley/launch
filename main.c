@@ -1237,6 +1237,10 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	}
     }
 
+    SInt64 hardLinkCount;
+    if (sInt64Prop(props, kCFURLLinkCountKey, &hardLinkCount) && hardLinkCount > 1)
+        printf("\thard link count: %lld\n", hardLinkCount);
+
     if (resourceType == kCFURLFileResourceTypeDirectory) {
         printValence(url);
     } else {
