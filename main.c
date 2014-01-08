@@ -571,12 +571,23 @@ void printPathFromURL(CFURLRef url, FILE *stream) {
     fprintf(stream, "%s\n", strBuffer);
 }
 
-void printDateTime(const char *label, UTCDateTime *utcTime, const char *postLabel, Boolean printIfEmpty) {
+void printAbsoluteTime(const char *label, CFAbsoluteTime absoluteTime, const char *postStr) {
     static CFDateFormatterRef formatter = NULL;
     static char strBuffer[STRBUF_LEN];
     if (formatter == NULL) {
 	formatter = CFDateFormatterCreate(NULL, CFLocaleCopyCurrent(), kCFDateFormatterShortStyle, kCFDateFormatterMediumStyle);
     }
+
+    CFStringRef dateTimeString = CFDateFormatterCreateStringWithAbsoluteTime(NULL, formatter, absoluteTime);
+    if (dateTimeString == NULL || !CFStringGetCString(dateTimeString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8))
+        strcpy(strBuffer, "[can't format]");
+
+    if (dateTimeString != NULL)
+        CFRelease(dateTimeString);
+    printf("\t%s: %s%s\n", label, strBuffer, postStr);
+}
+
+void printDateTime(const char *label, UTCDateTime *utcTime, const char *postStr, Boolean printIfEmpty) {
     CFAbsoluteTime absoluteTime;
     OSStatus err;
 
@@ -587,13 +598,7 @@ void printDateTime(const char *label, UTCDateTime *utcTime, const char *postLabe
     }
     if (err != noErr) osstatusexit(err, "unable to convert UTC %s time", label);
 
-    CFStringRef dateTimeString = CFDateFormatterCreateStringWithAbsoluteTime(NULL, formatter, absoluteTime);
-    if (dateTimeString == NULL || !CFStringGetCString(dateTimeString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8))
-        strcpy(strBuffer, "[can't format]");
-
-    if (dateTimeString != NULL)
-        CFRelease(dateTimeString);
-    printf("\t%s: %s%s\n", label, strBuffer, postLabel);
+    printAbsoluteTime(label, absoluteTime, postStr);
 }
 
 #define DFORMAT(SIZE) ((float)(SIZE) / 1024.)
@@ -805,6 +810,24 @@ Boolean printSizeProp(CFDictionaryRef props, CFStringRef key, char *label) {
     return retrieved;
 }
 
+Boolean dateProp(CFDictionaryRef props, CFStringRef key, CFAbsoluteTime *absoluteTimePtr) {
+    CFTypeRef value = CFDictionaryGetValue(props, key);
+    if (value == NULL || CFGetTypeID(value) != CFDateGetTypeID())
+        return false;
+    *absoluteTimePtr = CFDateGetAbsoluteTime((CFDateRef)value);
+    return true;
+}
+
+Boolean printDateProp(CFDictionaryRef props, CFStringRef key, char *label) {
+    CFAbsoluteTime absoluteTime;
+    Boolean retrieved = dateProp(props, key, &absoluteTime);
+    if (retrieved) {
+        printAbsoluteTime(label, absoluteTime, "");
+    }
+
+    return retrieved;
+}
+
 void printMoreInfoForVolume(CFURLRef url) {
     const CFStringRef VOLUME_KEYS[] = {
         kCFURLVolumeLocalizedFormatDescriptionKey,
@@ -892,7 +915,7 @@ void printMoreInfoForRef(FSRef fsr) {
     OSStatus err;
     FSCatalogInfo fscInfo;
 
-    err = FSGetCatalogInfo(&fsr, kFSCatInfoNodeFlags | kFSCatInfoAllDates | kFSCatInfoDataSizes | kFSCatInfoRsrcSizes | kFSCatInfoValence, &fscInfo, NULL, NULL, NULL);
+    err = FSGetCatalogInfo(&fsr, kFSCatInfoNodeFlags | kFSCatInfoDataSizes | kFSCatInfoRsrcSizes | kFSCatInfoValence, &fscInfo, NULL, NULL, NULL);
     if (err != noErr) osstatusexit(err, "unable to get catalog information for file");
 
     if (fscInfo.nodeFlags & kFSNodeIsDirectoryMask) {
@@ -917,11 +940,6 @@ void printMoreInfoForRef(FSRef fsr) {
         }
         printf("\n");
     }
-
-    printDateTime("created", &fscInfo.createDate, "", true); // XXX replace by kCFURLCreationDateKey
-    printDateTime("modified", &fscInfo.contentModDate, "", true); // XXX replace by kCFURLContentModificationDateKey
-    printDateTime("accessed", &fscInfo.accessDate, " [only updated by OS X]", false); // XXX replace by kCFURLContentAccessDateKey
-    printDateTime("backed up", &fscInfo.backupDate, "", false);
 }
 
 const char *utf8StrFromCFString(CFStringRef string) {
@@ -1054,8 +1072,8 @@ void printInfoFromURL(CFURLRef url, void *context) {
     const CFStringRef KEYS[] = {
         kCFURLIsSystemImmutableKey, kCFURLIsUserImmutableKey, //
         kCFURLHasHiddenExtensionKey, //
-        kCFURLCreationDateKey, kCFURLContentAccessDateKey,
-        kCFURLContentModificationDateKey,
+        kCFURLCreationDateKey, kCFURLContentAccessDateKey, //
+        kCFURLContentModificationDateKey, //
         kCFURLLinkCountKey, kCFURLLabelNumberKey, kCFURLLocalizedLabelKey,
         kCFURLIsExcludedFromBackupKey, //
         kCFURLFileResourceTypeKey,
@@ -1177,6 +1195,11 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	}
 	printMoreInfoForRef(fsr);
     }
+
+    // dates
+    printDateProp(props, kCFURLCreationDateKey, "created");
+    printDateProp(props, kCFURLContentModificationDateKey, "modified");
+    printDateProp(props, kCFURLContentAccessDateKey, "accessed");
 
     beginBooleanPropItemList("attributes");
     printPropItemIfYes(props, kCFURLIsSystemImmutableKey, "system immutable");
