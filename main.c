@@ -1076,7 +1076,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
         kCFURLContentModificationDateKey, //
         kCFURLLinkCountKey, kCFURLLabelNumberKey, kCFURLLocalizedLabelKey,
         kCFURLIsExcludedFromBackupKey, //
-        kCFURLFileResourceTypeKey,
+        kCFURLFileResourceTypeKey, //
         kCFURLFileSizeKey, kCFURLFileAllocatedSizeKey,
         kCFURLTotalFileSizeKey, kCFURLTotalFileAllocatedSizeKey
     };
