@@ -1218,6 +1218,16 @@ void printInfoFromURL(CFURLRef url, void *context) {
     printPropItemIfYes(props, kCFURLIsExcludedFromBackupKey, "excluded from backup");
     endBooleanPropItemList("none");
 
+    SInt64 labelNumber;
+    if (sInt64Prop(props, kCFURLLabelNumberKey, &labelNumber) && labelNumber > 0) {
+        printf("\tlabel: ");
+        char *labelName;
+        if (strProp(props, kCFURLLocalizedLabelKey, &labelName))
+            printf("%s (%lld)\n", labelName, labelNumber);
+        else
+            printf("%lld\n", labelNumber);
+    }
+
     if (haveFSRef) {
 	// content type identifier (UTI)
 	err = LSCopyItemAttribute(&fsr, kLSRolesAll, kLSItemContentType, (CFTypeRef *)&kind);
