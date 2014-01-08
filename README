@@ -226,6 +226,8 @@ VERSION HISTORY
  - display alias targets, where available, with -f
  - display detailed volume information with -f
  - display information on special files and named pipes with -f
+ - display total file size (including all forks and metadata)
+   instead of resource fork size with -f
  - restore -o: pass command-line arguments, fixed as of 10.5
  - read Info.plists embedded in Mach-O binaries
  - fix incorrect error messages with -u
@@ -235,6 +237,7 @@ VERSION HISTORY
  - update error codes
  - remove support for Classic and resource fork versions
  - remove display of backup date (no supported way to retrieve it)
+ - remove display of "in use" status (no supported way to retrieve it)
  - eliminate use of API deprecated as of OS X 10.8
  - now requires OS X 10.8 or later
 1.1 - 30 October 2006
