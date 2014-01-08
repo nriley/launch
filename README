@@ -222,12 +222,20 @@ VERSION HISTORY
 ---------------
 
 1.2 - unreleased
- - update error codes
- - eliminate use of deprecated API
- - read Info.plists embedded in Mach-O binaries
+ - -l: no longer use Internet Config, can specify application
  - display alias targets, where available, with -f
- - remove support for Classic
- - restore -o: pass command-line arguments, fixed in 10.5 and later
+ - display detailed volume information with -f
+ - display information on special files and named pipes with -f
+ - restore -o: pass command-line arguments, fixed as of 10.5
+ - read Info.plists embedded in Mach-O binaries
+ - fix incorrect error messages with -u
+ - fix symbolic links being identified as aliases everywhere
+ - fix incorrect size display for items over 4 GB
+ - fix display of [can't access package contents] for non-packages
+ - update error codes
+ - remove support for Classic and resource fork versions
+ - remove display of backup date (no supported way to retrieve it)
+ - eliminate use of API deprecated as of OS X 10.8
  - now requires OS X 10.8 or later
 1.1 - 30 October 2006
  - -L: send "launch" (ascr/noop) event to app, bypasses automatic
