@@ -1128,7 +1128,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	    CFRelease(executable);
 	}
 	CFRelease(bundle);
-    } else if (info.flags & kLSItemInfoIsPackage || !haveFSRef) {
+    } else if (info.flags & kLSItemInfoIsPackage && !haveFSRef) {
 	printf("\t[can't access package contents]\n");
     } else if (haveFSRef) {
 	CFPropertyListRef infoPlist = CFBundleCopyInfoDictionaryForURL(url);
