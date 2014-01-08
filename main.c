@@ -12,7 +12,7 @@
  * Neither the name of this software nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
 */
 
 #define BROKEN_AUTHORIZATION 1
@@ -43,9 +43,9 @@ struct {
     Boolean appSpecified;
     Boolean forceURLs;
     enum { ACTION_FIND, ACTION_FIND_ITEMS,
-	   ACTION_OPEN, ACTION_OPEN_ITEMS, 
+	   ACTION_OPEN, ACTION_OPEN_ITEMS,
 	   ACTION_INFO_ITEMS, ACTION_LAUNCH_URLS } action;
-} OPTS = 
+} OPTS =
 {
     kLSUnknownCreator, NULL, NULL, false, false,
     ACTION_DEFAULT
@@ -194,18 +194,18 @@ Boolean authenticated(AuthorizationItem item, AuthorizationRef *pAuthRef) {
     // flags to get the user's current authorization rights.
     rights.count = 0;
     rights.items = NULL;
-    
+
     flags = kAuthorizationFlagDefaults;
 
     err = AuthorizationCreate(&rights,
         kAuthorizationEmptyEnvironment, flags,
         pAuthRef);
-        
+
     rights.count = 1;
     rights.items = &item;
-    
+
     flags = kAuthorizationFlagExtendRights;
-    
+
     // don't ask for a password, just return failure if no rights
     err = AuthorizationCopyRights(*pAuthRef, &rights,
         kAuthorizationEmptyEnvironment, flags, &authorizedRights);
@@ -233,13 +233,13 @@ void authenticate(AuthorizationItem item, AuthorizationRef authorizationRef) {
 
     // Here, since we've specified kAuthorizationFlagExtendRights and
     // have also specified kAuthorizationFlagInteractionAllowed, if the
-    // user isn't currently authorized to execute tools as root 
-    // (kAuthorizationRightExecute), they will be asked for their password. 
+    // user isn't currently authorized to execute tools as root
+    // (kAuthorizationRightExecute), they will be asked for their password.
     // The err return value will indicate authorization success or failure.
     err = AuthorizationCopyRights(authorizationRef,&rights,
                         kAuthorizationEmptyEnvironment,
                         flags,&authorizedRights);
-    
+
     if (errAuthorizationSuccess == err)
         AuthorizationFreeItemSet(authorizedRights);
     else
@@ -301,7 +301,7 @@ char *tempFile(int *fd) {
     fInfo->finderFlags |= kIsStationery;
     err = FSSetCatalogInfo(&fsr, kFSCatInfoFinderInfo, &catalogInfo);
     if (err != noErr) osstatusexit(err, "can't set information for '%s'", tempPath);
-    
+
     return tempPath;
 }
 
@@ -348,7 +348,7 @@ void getargs(int argc, char * const argv[]) {
     int ch;
 
     if (argc == 1) usage();
-    
+
     while ( (ch = getopt(argc, argv, "npflswbmhLUc:i:u:a:o:")) != -1) {
         switch (ch) {
         case 'n':
@@ -376,7 +376,7 @@ void getargs(int argc, char * const argv[]) {
             AuthorizationRef authRef;
             AuthorizationItem item = { kAuthorizationRightExecute, strlen(argv[0]), argv[0], 0 };
             OSStatus err;
-            
+
             if (authenticated(item, &authRef)) {
                 continue;
             }
@@ -442,14 +442,14 @@ void getargs(int argc, char * const argv[]) {
         default: usage();
         }
     }
-    
+
     argc -= optind;
     argv += optind;
-    
+
     if ( (OPTS.action == ACTION_FIND || OPTS.action == ACTION_LAUNCH_URLS ||
 	  OPTS.action == ACTION_INFO_ITEMS) && LPARAMS.flags != DEFAULT_LAUNCH_FLAGS)
         errexit("options -s, -b, -m, -h apply to application launch (not -n, -f or -l)");
-    
+
     if (OPTS.creator == kLSUnknownCreator && OPTS.bundleID == NULL && OPTS.name == NULL) {
 	if (argc == 0 && LPARAMS.application == NULL)
 	    errexit("without items, must specify an application by -u, or one or more of -c, -i, -a");
@@ -469,7 +469,7 @@ void getargs(int argc, char * const argv[]) {
 
     if (argc == 0 && OPTS.action == ACTION_OPEN && LPARAMS.flags & kLSLaunchAndPrint)
         errexit("print option (-p) must be accompanied by document(s) to print");
-    
+
     if (argc != 0) {
         int i;
         OSStatus err;
@@ -523,7 +523,7 @@ Boolean stringFromURLIsRemote(CFURLRef url, char *strBuffer) {
     CFStringRef scheme = CFURLCopyScheme(url);
     Boolean isRemote = !CFEqual(scheme, CFSTR("file"));
     CFRelease(scheme);
-    
+
     strBuffer[0] = '\0';
     if (isRemote) {
         CFStringRef urlString = CFURLGetString(url);
@@ -572,7 +572,7 @@ void printDateTime(const char *label, UTCDateTime *utcTime, const char *postLabe
 
     CFStringRef dateTimeString = CFDateFormatterCreateStringWithAbsoluteTime(NULL, formatter, absoluteTime);
     CFStringGetCString(dateTimeString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8);
-    
+
     printf("\t%s: %s%s\n", label, strBuffer, postLabel);
 }
 
@@ -679,18 +679,18 @@ void printExecutableArchitectures(CFURLRef url, bool printOnFailure) {
     uint8_t path[PATH_MAX];
     if (printOnFailure)
         printf("\tarchitecture: ");
-        
+
     if (!CFURLGetFileSystemRepresentation(url, true, path, PATH_MAX)) {
         if (printOnFailure) printf("(can't get executable)\n");
         return;
     }
-    
+
     int fd = open((const char *)path, O_RDONLY, 0777);
     if (fd <= 0) {
         if (printOnFailure) printf("(can't read)\n");
         return;
     }
-    
+
     uint8_t bytes[MAX_HEADER_BYTES];
     ssize_t length = read(fd, bytes, MAX_HEADER_BYTES);
     close(fd);
@@ -724,15 +724,15 @@ void printExecutableArchitectures(CFURLRef url, bool printOnFailure) {
         num_fat = ((struct fat_header *)bytes)->nfat_arch;
         if (num_fat > max_fat) num_fat = max_fat;
     }
-    
+
     if (num_fat == 0) {
         if (printOnFailure) printf("(none found)\n");
         return;
     }
-    
+
     if (!printOnFailure)
         printf("\tarchitecture: ");
-        
+
     for (int i = 0 ; i < num_fat ; i++) {
         if (i != 0) printf(", ");
         const NXArchInfo *arch = NXGetArchInfoFromCpuType(fat[i].cputype, fat[i].cpusubtype);
@@ -749,19 +749,19 @@ void printExecutableArchitectures(CFURLRef url, bool printOnFailure) {
 void printInfoFromURL(CFURLRef url, void *context) {
     CFStringRef kind;
     static char strBuffer[STRBUF_LEN];
-    
+
     check(url != NULL && context == NULL);
 
     if (stringFromURLIsRemote(url, strBuffer)) {
         printf("<%s>: URL\n", strBuffer);
 	return;
     }
-    
+
     static LSItemInfoRecord info;
     OSStatus err;
     if ( (err = LSCopyItemInfoForURL(url, kLSRequestAllInfo, &info)) != noErr)
 	osstatusexit(err, "unable to get information about '%s'", strBuffer);
-    
+
     printf("%s: ", strBuffer);
     
     // modifiers
@@ -797,7 +797,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
     FSRef fsr;
     Boolean haveFSRef = CFURLGetFSRef(url, &fsr);
     CFBundleRef bundle = NULL;
-    
+
     if ((info.flags & kLSItemInfoIsPackage || info.flags & kLSItemInfoIsApplication) &&
 	( (bundle = CFBundleCreate(NULL, url)) != NULL)) {
 	bundleID = CFBundleGetIdentifier(bundle);
@@ -889,9 +889,9 @@ OSStatus openItems(void) {
 void background() {
     if (fork() > 1)
         exit(0);
-    
+
     int fd;
-    
+
     if ( (fd = open("/dev/null", O_RDWR, 0)) != -1) {
         dup2(fd, STDIN_FILENO);
         dup2(fd, STDOUT_FILENO);
@@ -901,14 +901,14 @@ void background() {
 
 int main (int argc, char * const argv[]) {
     OSStatus err;
-    
+
     APP_NAME = argv[0];
     getargs(argc, argv);
 
     if (OPTS.appSpecified && LPARAMS.application == NULL) {
 	err = LSFindApplicationForInfo(OPTS.creator, OPTS.bundleID, OPTS.name, &APPLICATION, NULL);
         LPARAMS.application = &APPLICATION;
-        
+
 	if (err != noErr) {
 	    if (OPTS.name != NULL && !CFStringHasSuffix(OPTS.name, CFSTR(".app"))) {
 		OPTS.name = CFStringCreateMutableCopy(NULL, CFStringGetLength(OPTS.name) + 4, OPTS.name);
@@ -920,7 +920,7 @@ int main (int argc, char * const argv[]) {
 	}
         findOK: ;
     }
-    
+
     switch (OPTS.action) {
     case ACTION_FIND:
 	printPathFromURL(CFURLCreateFromFSRef(NULL, LPARAMS.application), stdout);
