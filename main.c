@@ -856,8 +856,8 @@ void printMoreInfoForVolume(CFURLRef url) {
     }
     CFErrorRef error;
     CFDictionaryRef props = CFURLCopyResourcePropertiesForKeys(url, keys, &error);
+    CFRelease(keys);
     if (props == NULL) {
-        CFRelease(keys);
         printf("\t[can't get volume information: %s]\n", cferrorstr(error));
         return;
     }
@@ -909,7 +909,6 @@ void printMoreInfoForVolume(CFURLRef url) {
     printStringProp(props, kCFURLVolumeUUIDStringKey, "UUID", NULL, NULL);
     printURLProp(props, kCFURLVolumeURLForRemountingKey, "URL");
     CFRelease(props);
-    CFRelease(keys);
 }
 
 void printMoreInfoForRef(FSRef fsr) {
@@ -1093,10 +1092,10 @@ void printInfoFromURL(CFURLRef url, void *context) {
     CFRetain(urlString);
     CFIndex retainCountBefore = CFGetRetainCount(urlString);
     CFDictionaryRef props = CFURLCopyResourcePropertiesForKeys(url, keys, &error);
+    CFRelease(keys);
     if (retainCountBefore == CFGetRetainCount(urlString))
         CFRelease(urlString); // make a noop after the bug is fixed
     if (props == NULL) {
-        CFRelease(keys);
         printf("[can't get more information: %s]\n", cferrorstr(error));
         return;
     }
@@ -1240,7 +1239,6 @@ void printInfoFromURL(CFURLRef url, void *context) {
     }
 
     CFRelease(props);
-    CFRelease(keys);
 }
 
 OSStatus openItems(void) {
