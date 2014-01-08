@@ -641,17 +641,6 @@ void printSize(SInt64 size) {
         printPhysicalSize((UInt64)size);
 }
 
-void printSizes(const char *label, UInt64 logicalSize, UInt64 physicalSize, Boolean printIfZero) {
-    if (!printIfZero && physicalSize == 0) return;
-    printf("\t%s: ", label);
-    if (physicalSize == 0) {
-        printf("zero bytes on disk (zero bytes used)\n");
-        return;
-    }
-    printPhysicalSize(physicalSize);
-    printf(" on disk (%llu bytes used)\n", logicalSize);
-}
-
 Boolean booleanProp(CFDictionaryRef props, CFStringRef key, Boolean *boolean) {
     CFTypeRef value = CFDictionaryGetValue(props, key);
     if (value == NULL || CFGetTypeID(value) != CFBooleanGetTypeID())
@@ -810,6 +799,27 @@ Boolean printSizeProp(CFDictionaryRef props, CFStringRef key, char *label) {
     return retrieved;
 }
 
+Boolean printSizesProp(CFDictionaryRef props, CFStringRef logicalSizeKey, CFStringRef physicalSizeKey, char *label) {
+    SInt64 logicalSize = 0, physicalSize = 0;
+    Boolean logicalSizeRetrieved = sInt64Prop(props, logicalSizeKey, &logicalSize);
+    Boolean physicalSizeRetrieved = sInt64Prop(props, physicalSizeKey, &physicalSize);
+    if (!logicalSizeRetrieved && !physicalSizeRetrieved)
+        return false;
+
+    printf("\t%s: ", label);
+    if (logicalSizeRetrieved && physicalSizeRetrieved) {
+        if (physicalSize == 0) {
+            printf("zero bytes on disk (zero bytes used)\n");
+        } else {
+            printPhysicalSize(physicalSize);
+            printf(" on disk (%llu bytes used)\n", logicalSize);
+        }
+    } else {
+        printPhysicalSize(logicalSize || physicalSize);
+    }
+    return true;
+}
+
 Boolean dateProp(CFDictionaryRef props, CFStringRef key, CFAbsoluteTime *absoluteTimePtr) {
     CFTypeRef value = CFDictionaryGetValue(props, key);
     if (value == NULL || CFGetTypeID(value) != CFDateGetTypeID())
@@ -915,7 +925,7 @@ void printMoreInfoForRef(FSRef fsr) {
     OSStatus err;
     FSCatalogInfo fscInfo;
 
-    err = FSGetCatalogInfo(&fsr, kFSCatInfoNodeFlags | kFSCatInfoDataSizes | kFSCatInfoRsrcSizes | kFSCatInfoValence, &fscInfo, NULL, NULL, NULL);
+    err = FSGetCatalogInfo(&fsr, kFSCatInfoValence, &fscInfo, NULL, NULL, NULL);
     if (err != noErr) osstatusexit(err, "unable to get catalog information for file");
 
     if (fscInfo.nodeFlags & kFSNodeIsDirectoryMask) {
@@ -925,10 +935,6 @@ void printMoreInfoForRef(FSRef fsr) {
 	case 1: printf("1 item\n"); break;
 	default: printf("%lu items\n", fscInfo.valence);
 	}
-    } else {
-        printSizes("data fork size", fscInfo.dataLogicalSize, fscInfo.dataPhysicalSize, true);
-        printSizes("rsrc fork size", fscInfo.rsrcLogicalSize, fscInfo.rsrcPhysicalSize, false);
-    }
 
     if (fscInfo.nodeFlags & (kFSNodeLockedMask | kFSNodeForkOpenMask)) {
         printf("\tstatus:");
@@ -1202,6 +1208,10 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	}
 	printMoreInfoForRef(fsr);
     }
+
+    // sizes
+    printSizesProp(props, kCFURLFileSizeKey, kCFURLFileAllocatedSizeKey, "data fork size");
+    printSizesProp(props, kCFURLTotalFileSizeKey, kCFURLTotalFileAllocatedSizeKey, "total file size");
 
     // dates
     printDateProp(props, kCFURLCreationDateKey, "created");
