@@ -1076,7 +1076,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
         kCFURLCreationDateKey, kCFURLContentAccessDateKey, //
         kCFURLContentModificationDateKey, //
         kCFURLLinkCountKey, kCFURLLabelNumberKey, kCFURLLocalizedLabelKey,
-        kCFURLIsExcludedFromBackupKey, //
+        kCFURLIsExcludedFromBackupKey, // triggers <http://www.openradar.me/15772932>
         kCFURLFileResourceTypeKey, //
         kCFURLFileSizeKey, kCFURLFileAllocatedSizeKey,
         kCFURLTotalFileSizeKey, kCFURLTotalFileAllocatedSizeKey
@@ -1086,8 +1086,15 @@ void printInfoFromURL(CFURLRef url, void *context) {
         printf("[can't get more information]\n");
         return;
     }
-    CFErrorRef error;
+    CFErrorRef error = NULL;
+
+    // work around <http://www.openradar.me/15772932>
+    CFStringRef urlString = CFURLGetString(url);
+    CFRetain(urlString);
+    CFIndex retainCountBefore = CFGetRetainCount(urlString);
     CFDictionaryRef props = CFURLCopyResourcePropertiesForKeys(url, keys, &error);
+    if (retainCountBefore == CFGetRetainCount(urlString))
+        CFRelease(urlString); // make a noop after the bug is fixed
     if (props == NULL) {
         CFRelease(keys);
         printf("[can't get more information: %s]\n", cferrorstr(error));
