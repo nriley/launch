@@ -594,14 +594,15 @@ void printDateTime(const char *label, UTCDateTime *utcTime, const char *postLabe
 
 #define DFORMAT(SIZE) ((float)(SIZE) / 1024.)
 
-void printSizes(const char *label, UInt64 logicalSize, UInt64 physicalSize, Boolean printIfZero) {
+void printPhysicalSize(UInt64 physicalSize) {
+    if (physicalSize == 0) {
+        printf("zero bytes");
+        return;
+    }
     UInt32 bigSize = physicalSize >> 32, littleSize = physicalSize;
-    if (!printIfZero && bigSize == 0 && littleSize == 0) return;
-    printf("\t%s: ", label);
     if (bigSize == 0) {
-        if (littleSize == 0) {
-            printf("zero bytes on disk (zero bytes used)\n"); return;
-        } else if (littleSize < 1024) printf("%lu bytes", littleSize);
+        if (littleSize < 1024)
+            printf("%lu bytes", littleSize);
         else {
             UInt32 adjSize = littleSize >> 10;
             if (adjSize < 1024) printf("%.1f KB", DFORMAT(littleSize));
@@ -615,14 +616,32 @@ void printSizes(const char *label, UInt64 logicalSize, UInt64 physicalSize, Bool
             }
         }
     } else {
-        if (bigSize < 256) printf("%lu GB", bigSize);
-        else {
-            bigSize >>= 2;
+        if (bigSize < 1024) { // < 4 TB
+            printf("%.2f GB", (float)(bigSize * 4 + littleSize / 1073741824.));
+        } else {
+            bigSize >>= 8;
             printf("%lu TB", bigSize);
         }
     }
+}
+
+void printSize(SInt64 size) {
+    if (size < 0)
+        printf("%lld bytes", size);
+    else
+        printPhysicalSize((UInt64)size);
+}
+
+void printSizes(const char *label, UInt64 logicalSize, UInt64 physicalSize, Boolean printIfZero) {
+    if (!printIfZero && physicalSize == 0) return;
+    printf("\t%s: ", label);
+    if (physicalSize == 0) {
+        printf("zero bytes on disk (zero bytes used)\n");
+        return;
+    }
+    printPhysicalSize(physicalSize);
     printf(" on disk (%llu bytes used)\n", logicalSize);
-        
+}
 }
 
 void printMoreInfoForRef(FSRef fsr) {
