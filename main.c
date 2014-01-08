@@ -588,9 +588,11 @@ void printDateTime(const char *label, UTCDateTime *utcTime, const char *postLabe
     if (err != noErr) osstatusexit(err, "unable to convert UTC %s time", label);
 
     CFStringRef dateTimeString = CFDateFormatterCreateStringWithAbsoluteTime(NULL, formatter, absoluteTime);
-    if (!CFStringGetCString(dateTimeString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8))
+    if (dateTimeString == NULL || !CFStringGetCString(dateTimeString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8))
         strcpy(strBuffer, "[can't format]");
 
+    if (dateTimeString != NULL)
+        CFRelease(dateTimeString);
     printf("\t%s: %s%s\n", label, strBuffer, postLabel);
 }
 
