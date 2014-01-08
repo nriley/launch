@@ -642,6 +642,246 @@ void printSizes(const char *label, UInt64 logicalSize, UInt64 physicalSize, Bool
     printPhysicalSize(physicalSize);
     printf(" on disk (%llu bytes used)\n", logicalSize);
 }
+
+Boolean booleanProp(CFDictionaryRef props, CFStringRef key, Boolean *boolean) {
+    CFTypeRef value = CFDictionaryGetValue(props, key);
+    if (value == NULL || CFGetTypeID(value) != CFBooleanGetTypeID())
+        return false;
+
+    *boolean = CFBooleanGetValue((CFBooleanRef)value);
+    return true;
+}
+
+Boolean printBooleanProp(CFDictionaryRef props, CFStringRef key, char *yesStr, char *noStr, char *unknownStr, char *preStr, char *postStr) {
+    char *str;
+    Boolean boolean;
+    if (booleanProp(props, key, &boolean)) {
+        str = boolean ? yesStr : noStr;
+    } else {
+        str = unknownStr;
+    }
+
+    if (str)
+        printf("%s %s%s", preStr ? preStr : "", str, postStr ? postStr : "");
+
+    return str != NULL;
+}
+
+static Boolean haveBooleanPropItem;
+Boolean printBooleanPropItem(CFDictionaryRef props, CFStringRef key, char *yesStr, char *noStr) {
+    char *preStr = NULL;
+    if (haveBooleanPropItem)
+        preStr = ",";
+
+    Boolean printed = printBooleanProp(props, key, yesStr, noStr, NULL, preStr, NULL);
+    if (!haveBooleanPropItem)
+        haveBooleanPropItem = printed;
+
+    return printed;
+}
+
+Boolean printPropItemIfYes(CFDictionaryRef props, CFStringRef key, char *yesStr) {
+    return printBooleanPropItem(props, key, yesStr, NULL);
+}
+
+void beginBooleanPropItemList(char *label) {
+    printf("\t%s:", label);
+    haveBooleanPropItem = false;
+}
+
+void endBooleanPropItemList(char *noItemsStr) {
+    if (!haveBooleanPropItem)
+        printf(" %s", noItemsStr);
+    printf("\n");
+    haveBooleanPropItem = false;
+}
+
+Boolean strProp(CFDictionaryRef props, CFStringRef key, char **strPtr) {
+    static char *str = NULL;
+    if (str != NULL) {
+        free(str);
+        str = NULL;
+    }
+
+    CFTypeRef value = CFDictionaryGetValue(props, key);
+    if (value == NULL) {
+        *strPtr = NULL;
+        return false;
+    }
+
+    if (CFGetTypeID(value) != CFStringGetTypeID()) {
+        *strPtr = "[unexpected value]";
+        return false;
+    }
+
+    str = mallocedUTF8StrFromCFString((CFStringRef)value);
+    if (str == NULL) {
+        *strPtr = "[can't retrieve]";
+        return false;
+    }
+
+    *strPtr = str;
+    return true;
+}
+
+Boolean printStringProp(CFDictionaryRef props, CFStringRef key, char *label, char *preStr, char *postStr) {
+    char *str;
+    Boolean retrieved = strProp(props, key, &str);
+    if (retrieved)
+        printf("\t%s: %s%s%s\n", label, preStr ? preStr : "", str, postStr ? postStr : "");
+    else if (str != NULL)
+        printf("\t%s: %s\n", label, str);
+
+    return retrieved;
+}
+
+Boolean urlProp(CFDictionaryRef props, CFStringRef key, char **strPtr) {
+    static char *str = NULL;
+    if (str != NULL) {
+        free(str);
+        str = NULL;
+    }
+
+    CFTypeRef value = CFDictionaryGetValue(props, key);
+    if (value == NULL) {
+        *strPtr = NULL;
+        return false;
+    }
+
+    if (CFGetTypeID(value) != CFURLGetTypeID()) {
+        *strPtr = "[unexpected value]";
+        return false;
+    }
+
+    CFStringRef string = CFURLGetString((CFURLRef)value);
+    if (string == NULL) {
+        *strPtr = "[can't extract URL]";
+        return false;
+    }
+    str = mallocedUTF8StrFromCFString(string);
+    if (str == NULL) {
+        *strPtr = "[can't retrieve URL]";
+        return false;
+    }
+
+    *strPtr = str;
+    return true;
+}
+
+Boolean printURLProp(CFDictionaryRef props, CFStringRef key, char *label) {
+    char *str;
+    Boolean retrieved = urlProp(props, key, &str);
+    if (retrieved)
+        printf("\t%s: <%s>\n", label, str);
+    else if (str != NULL)
+        printf("\t%s: %s\n", label, str);
+
+    return retrieved;
+}
+
+Boolean sInt64Prop(CFDictionaryRef props, CFStringRef key, SInt64 *sInt64Ptr) {
+    CFTypeRef value = CFDictionaryGetValue(props, key);
+    if (value == NULL || CFGetTypeID(value) != CFNumberGetTypeID())
+        return false;
+    CFNumberRef number = (CFNumberRef)value;
+    if (CFNumberIsFloatType(number))
+        return false;
+    return CFNumberGetValue(number, kCFNumberSInt64Type, sInt64Ptr);
+}
+
+Boolean printSizeProp(CFDictionaryRef props, CFStringRef key, char *label) {
+    SInt64 sInt64;
+    Boolean retrieved = sInt64Prop(props, key, &sInt64);
+    if (retrieved) {
+        printf("\t%s: ", label);
+        printSize(sInt64);
+        printf("\n");
+    }
+
+    return retrieved;
+}
+
+void printMoreInfoForVolume(CFURLRef url) {
+    const CFStringRef VOLUME_KEYS[] = {
+        kCFURLVolumeLocalizedFormatDescriptionKey,
+        kCFURLVolumeSupportsVolumeSizesKey, // if next 2 are valid
+        kCFURLVolumeTotalCapacityKey, kCFURLVolumeAvailableCapacityKey,
+        kCFURLVolumeResourceCountKey,
+        kCFURLVolumeSupportsPersistentIDsKey,
+        kCFURLVolumeSupportsSymbolicLinksKey, kCFURLVolumeSupportsHardLinksKey,
+        kCFURLVolumeSupportsJournalingKey, kCFURLVolumeIsJournalingKey,
+        kCFURLVolumeSupportsSparseFilesKey, kCFURLVolumeSupportsZeroRunsKey,
+        kCFURLVolumeSupportsCaseSensitiveNamesKey,
+        kCFURLVolumeSupportsCasePreservedNamesKey,
+        // kCFURLVolumeSupportsRootDirectoryDatesKey,
+        kCFURLVolumeSupportsRenamingKey, kCFURLVolumeSupportsAdvisoryFileLockingKey,
+        kCFURLVolumeSupportsExtendedSecurityKey, kCFURLVolumeIsBrowsableKey,
+        kCFURLVolumeMaximumFileSizeKey,
+        kCFURLVolumeIsEjectableKey, kCFURLVolumeIsRemovableKey,
+        kCFURLVolumeIsInternalKey, kCFURLVolumeIsAutomountedKey,
+        kCFURLVolumeIsLocalKey, kCFURLVolumeIsReadOnlyKey,
+        kCFURLVolumeURLForRemountingKey, kCFURLVolumeUUIDStringKey
+    };
+    CFArrayRef keys = CFArrayCreate(NULL, (const void **)&VOLUME_KEYS, sizeof(VOLUME_KEYS)/sizeof(CFStringRef *), NULL);
+    if (keys == NULL) {
+        printf("\t[can't get volume information]\n");
+        return;
+    }
+    CFErrorRef error;
+    CFDictionaryRef props = CFURLCopyResourcePropertiesForKeys(url, keys, &error);
+    CFRelease(keys);
+    if (props == NULL) {
+        printf("\t[can't get volume information: %s]\n", cferrorstr(error));
+        return;
+    }
+
+    printStringProp(props, kCFURLVolumeLocalizedFormatDescriptionKey, "filesystem", NULL, NULL);
+    SInt64 resourceCount;
+    if (sInt64Prop(props, kCFURLVolumeResourceCountKey, &resourceCount))
+        printf("\tfiles and folders: %lld\n", resourceCount);
+
+    Boolean supportsVolumeSizes;
+    if (booleanProp(props, kCFURLVolumeSupportsVolumeSizesKey, &supportsVolumeSizes) && supportsVolumeSizes) {
+        printSizeProp(props, kCFURLVolumeTotalCapacityKey, "capacity");
+        printSizeProp(props, kCFURLVolumeAvailableCapacityKey, "available");
+    }
+    printSizeProp(props, kCFURLVolumeMaximumFileSizeKey, "maximum file size");
+
+    beginBooleanPropItemList("is");
+    printPropItemIfYes(props, kCFURLVolumeIsEjectableKey, "ejectable");
+    printBooleanPropItem(props, kCFURLVolumeIsRemovableKey, "removable", "fixed");
+    printPropItemIfYes(props, kCFURLVolumeIsInternalKey, "internal");
+    printPropItemIfYes(props, kCFURLVolumeIsAutomountedKey, "automounted");
+    printBooleanPropItem(props, kCFURLVolumeIsLocalKey, "local", "remote");
+    printBooleanPropItem(props, kCFURLVolumeIsReadOnlyKey, "read-only", "read-write");
+    printPropItemIfYes(props, kCFURLVolumeSupportsRenamingKey, "renamable");
+    printBooleanPropItem(props, kCFURLVolumeIsBrowsableKey, "visible in UI", "not visible in UI");
+    endBooleanPropItemList("none");
+
+    beginBooleanPropItemList("supports");
+    printPropItemIfYes(props, kCFURLVolumeSupportsSymbolicLinksKey, "symlinks");
+    printPropItemIfYes(props, kCFURLVolumeSupportsHardLinksKey, "hard links");
+    printPropItemIfYes(props, kCFURLVolumeSupportsSparseFilesKey, "sparse files");
+    printPropItemIfYes(props, kCFURLVolumeSupportsZeroRunsKey, "zero runs");
+    printPropItemIfYes(props, kCFURLVolumeSupportsAdvisoryFileLockingKey, "advisory locking");
+    printPropItemIfYes(props, kCFURLVolumeSupportsExtendedSecurityKey, "ACLs");
+    printPropItemIfYes(props, kCFURLVolumeSupportsPersistentIDsKey, "persistent IDs");
+    endBooleanPropItemList("none");
+
+    beginBooleanPropItemList("names");
+    printBooleanPropItem(props, kCFURLVolumeSupportsCaseSensitiveNamesKey, "case-sensitive", "case-insensitive");
+    // AppleShare reports false here, which if displayed could be confusing
+    printPropItemIfYes(props, kCFURLVolumeSupportsCasePreservedNamesKey, "case-preserving");
+    endBooleanPropItemList("unknown");
+
+    printf("\tjournaling:");
+    Boolean journalingSupportKnown = printBooleanProp(props, kCFURLVolumeSupportsJournalingKey, "supported", "not supported", NULL, NULL, ",");
+    printBooleanProp(props, kCFURLVolumeIsJournalingKey, "active", "inactive", journalingSupportKnown ? NULL : "unknown", NULL, NULL);
+    printf("\n");
+
+    printStringProp(props, kCFURLVolumeUUIDStringKey, "UUID", NULL, NULL);
+    printURLProp(props, kCFURLVolumeURLForRemountingKey, "URL");
+    CFRelease(props);
 }
 
 void printMoreInfoForRef(FSRef fsr) {
@@ -922,6 +1162,10 @@ void printInfoFromURL(CFURLRef url, void *context) {
             }
             CFRelease(bookmarkData);
         }
+    }
+
+    if (info.flags & kLSItemInfoIsVolume) {
+        printMoreInfoForVolume(url);
     }
 }
 
