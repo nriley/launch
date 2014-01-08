@@ -935,16 +935,6 @@ void printMoreInfoForRef(FSRef fsr) {
 	case 1: printf("1 item\n"); break;
 	default: printf("%lu items\n", fscInfo.valence);
 	}
-
-    if (fscInfo.nodeFlags & (kFSNodeLockedMask | kFSNodeForkOpenMask)) {
-        printf("\tstatus:");
-        if (fscInfo.nodeFlags & kFSNodeLockedMask) {
-            if (fscInfo.nodeFlags & kFSNodeForkOpenMask) printf(" in use,");
-            printf(" locked");
-        } else {
-            printf(" in use");
-        }
-        printf("\n");
     }
 }
 
@@ -1199,6 +1189,13 @@ void printInfoFromURL(CFURLRef url, void *context) {
         CFRelease(kind);
     }
 
+    beginBooleanPropItemList("attributes");
+    printPropItemIfYes(props, kCFURLIsSystemImmutableKey, "system immutable");
+    printPropItemIfYes(props, kCFURLIsUserImmutableKey, "user immutable (locked)");
+    printPropItemIfYes(props, kCFURLHasHiddenExtensionKey, "extension hidden");
+    printPropItemIfYes(props, kCFURLIsExcludedFromBackupKey, "excluded from backup");
+    endBooleanPropItemList("none");
+
     if (haveFSRef) {
 	// content type identifier (UTI)
 	err = LSCopyItemAttribute(&fsr, kLSRolesAll, kLSItemContentType, (CFTypeRef *)&kind);
@@ -1217,13 +1214,6 @@ void printInfoFromURL(CFURLRef url, void *context) {
     printDateProp(props, kCFURLCreationDateKey, "created");
     printDateProp(props, kCFURLContentModificationDateKey, "modified");
     printDateProp(props, kCFURLContentAccessDateKey, "accessed");
-
-    beginBooleanPropItemList("attributes");
-    printPropItemIfYes(props, kCFURLIsSystemImmutableKey, "system immutable");
-    printPropItemIfYes(props, kCFURLIsUserImmutableKey, "user immutable");
-    printPropItemIfYes(props, kCFURLHasHiddenExtensionKey, "extension hidden");
-    printPropItemIfYes(props, kCFURLIsExcludedFromBackupKey, "excluded from backup");
-    endBooleanPropItemList("none");
 
     // alias target (note: may modify url)
     if (info.flags & kLSItemInfoIsAliasFile && haveFSRef) {
