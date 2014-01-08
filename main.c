@@ -920,7 +920,7 @@ void printMoreInfoForRef(FSRef fsr) {
     printDateTime("backed up", &fscInfo.backupDate, "", false);
 }
 
-const char *utf8StrFromCFStringRef(CFStringRef string) {
+const char *utf8StrFromCFString(CFStringRef string) {
     static char tmpBuffer[STRBUF_LEN];
     if (CFStringGetCString(string, tmpBuffer, STRBUF_LEN, kCFStringEncodingUTF8))
         return tmpBuffer;
@@ -944,7 +944,7 @@ const char *utf8StrFromOSType(OSType osType) {
 	strncpy(tmpBuffer, (const char *)&osType, 4);
 	return tmpBuffer;
     }
-    const char *buffer = utf8StrFromCFStringRef(typeStr);
+    const char *buffer = utf8StrFromCFString(typeStr);
     CFRelease(typeStr);
     return buffer;
 }
@@ -1146,11 +1146,11 @@ void printInfoFromURL(CFURLRef url, void *context) {
     }
 
     if (bundleID != NULL) {
-	printf("\tbundle ID: %s\n", utf8StrFromCFStringRef(bundleID));
+	printf("\tbundle ID: %s\n", utf8StrFromCFString(bundleID));
 	CFRelease(bundleID);
     }
     if (version != NULL) {
-	printf("\tversion: %s", utf8StrFromCFStringRef(version));
+	printf("\tversion: %s", utf8StrFromCFString(version));
 	if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);
 	putchar('\n');
 	CFRelease(version);
@@ -1160,7 +1160,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
     err = LSCopyKindStringForURL(url, &kind);
     if (err != fnfErr) { // returned on device nodes
         if (err != noErr) osstatusexit(err, "unable to get kind of '%s'", strBuffer);
-        printf("\tkind: %s\n", utf8StrFromCFStringRef(kind));
+        printf("\tkind: %s\n", utf8StrFromCFString(kind));
         CFRelease(kind);
     }
 
@@ -1168,7 +1168,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	// content type identifier (UTI)
 	err = LSCopyItemAttribute(&fsr, kLSRolesAll, kLSItemContentType, (CFTypeRef *)&kind);
 	if (err == noErr) {
-	    printf("\tcontent type ID: %s\n", utf8StrFromCFStringRef(kind));
+	    printf("\tcontent type ID: %s\n", utf8StrFromCFString(kind));
 	    CFRelease(kind);
 	}
 	printMoreInfoForRef(fsr);
