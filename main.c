@@ -1088,13 +1088,14 @@ void printInfoFromURL(CFURLRef url, void *context) {
     printf("%s: ", strBuffer);
 
     const CFStringRef KEYS[] = {
-        kCFURLIsSystemImmutableKey, kCFURLIsUserImmutableKey, //
-        kCFURLHasHiddenExtensionKey, //
-        kCFURLCreationDateKey, kCFURLContentAccessDateKey, //
-        kCFURLContentModificationDateKey, //
-        kCFURLLinkCountKey, kCFURLLabelNumberKey, kCFURLLocalizedLabelKey,
+        kCFURLIsSystemImmutableKey, kCFURLIsUserImmutableKey,
+        kCFURLHasHiddenExtensionKey,
+        kCFURLCreationDateKey, kCFURLContentAccessDateKey,
+        kCFURLContentModificationDateKey,
+        kCFURLLinkCountKey,
+        kCFURLLabelNumberKey, kCFURLLocalizedLabelKey,
         kCFURLIsExcludedFromBackupKey, // triggers <http://www.openradar.me/15772932>
-        kCFURLFileResourceTypeKey, //
+        kCFURLFileResourceTypeKey,
         kCFURLFileSizeKey, kCFURLFileAllocatedSizeKey,
         kCFURLTotalFileSizeKey, kCFURLTotalFileAllocatedSizeKey
     };
