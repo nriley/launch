@@ -612,7 +612,7 @@ void printPhysicalSize(UInt64 physicalSize) {
                 adjSize >>= 10; littleSize >>= 10;
                 if (adjSize < 1024) printf("%.2f MB", DFORMAT(littleSize));
                 else {
-                    adjSize >>= 10; littleSize >>= 10;
+                    /* adjSize >>= 10; */ littleSize >>= 10;
                     printf("%.2f GB", DFORMAT(littleSize));
                 }
             }
