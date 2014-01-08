@@ -544,6 +544,7 @@ Boolean stringFromURLIsRemote(CFURLRef url, char *strBuffer) {
     if (isRemote) {
         CFStringRef urlString = CFURLGetString(url);
 	CFStringGetCString(urlString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8);
+        // failure is handled by just returning the empty string
     } else {
 	if (CFURLGetFileSystemRepresentation(url, false, (UInt8 *)strBuffer, STRBUF_LEN)) {
 	    if (strBuffer[0] == '.' && strBuffer[1] == '/') {
@@ -587,7 +588,8 @@ void printDateTime(const char *label, UTCDateTime *utcTime, const char *postLabe
     if (err != noErr) osstatusexit(err, "unable to convert UTC %s time", label);
 
     CFStringRef dateTimeString = CFDateFormatterCreateStringWithAbsoluteTime(NULL, formatter, absoluteTime);
-    CFStringGetCString(dateTimeString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8);
+    if (!CFStringGetCString(dateTimeString, strBuffer, STRBUF_LEN, kCFStringEncodingUTF8))
+        strcpy(strBuffer, "[can't format]");
 
     printf("\t%s: %s%s\n", label, strBuffer, postLabel);
 }
