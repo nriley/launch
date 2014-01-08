@@ -1286,7 +1286,7 @@ int main (int argc, char * const argv[]) {
 	break;
     case ACTION_FIND_ITEMS:
         CFArrayApplyFunction(ITEMS, CFRangeMake(0, CFArrayGetCount(ITEMS)),
-			     (CFArrayApplierFunction) printPathFromURL, stdout);
+                             (CFArrayApplierFunction) printPathFromURL, stdout);
 	break;
     case ACTION_OPEN_ITEMS:
 	err = openItems();
@@ -1299,7 +1299,7 @@ int main (int argc, char * const argv[]) {
     case ACTION_INFO_ITEMS:
         CFArrayApplyFunction(ITEMS, CFRangeMake(0, CFArrayGetCount(ITEMS)),
 			     (CFArrayApplierFunction) printInfoFromURL, NULL);
-	break;
+        break;
     }
 
     if (TEMPFILE != NULL) {
