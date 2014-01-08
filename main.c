@@ -1239,6 +1239,10 @@ void printInfoFromURL(CFURLRef url, void *context) {
     printDateProp(props, kCFURLContentModificationDateKey, "modified");
     printDateProp(props, kCFURLContentAccessDateKey, "accessed");
 
+    if (info.flags & kLSItemInfoIsVolume) {
+        printMoreInfoForVolume(url);
+    }
+
     // alias target (note: may modify url)
     if (info.flags & kLSItemInfoIsAliasFile && haveFSRef) {
         CFErrorRef error;
@@ -1256,10 +1260,6 @@ void printInfoFromURL(CFURLRef url, void *context) {
             }
             CFRelease(bookmarkData);
         }
-    }
-
-    if (info.flags & kLSItemInfoIsVolume) {
-        printMoreInfoForVolume(url);
     }
 
     CFRelease(props);
