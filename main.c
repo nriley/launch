@@ -964,13 +964,13 @@ void printExecutableArchitectures(CFURLRef url, bool printOnFailure) {
         printf("\tarchitecture: ");
 
     if (!CFURLGetFileSystemRepresentation(url, true, path, PATH_MAX)) {
-        if (printOnFailure) printf("(can't get executable)\n");
+        if (printOnFailure) printf("[can't get executable]\n");
         return;
     }
 
     int fd = open((const char *)path, O_RDONLY, 0777);
     if (fd <= 0) {
-        if (printOnFailure) printf("(can't read)\n");
+        if (printOnFailure) printf("[can't read]\n");
         return;
     }
 
@@ -979,7 +979,7 @@ void printExecutableArchitectures(CFURLRef url, bool printOnFailure) {
     close(fd);
 
     if (length < sizeof(struct mach_header_64)) {
-        if (printOnFailure) printf("(can't read Mach-O header)\n");
+        if (printOnFailure) printf("[can't read Mach-O header]\n");
         return;
     }
 
