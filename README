@@ -10,22 +10,18 @@ WHAT IS IT?
 -----------
 
 Apple provides a simple command-line launching program called 'open'
-with Mac OS X.  It offers few options - launching applications by name
-or by path, launching TextEdit, or opening a number of applications,
-documents, folders, or URLs.  With the exception of special support for
-TextEdit (open -e), 'launch' does all this and:
+with OS X.  'launch' offers several options that 'open' doesn't; it:
 
-- opens URLs, directly or in your preferred helper application (-l)
+- opens "slack" URLs (e.g. apple.com) and email addresses (-l)
 - lets you specify applications by their four-character creator
-  (e.g. 'ToyS') or Java-style bundle ID (e.g. com.apple.scripteditor),
+  (e.g. 'ToyS') or Java-style bundle ID (e.g. com.apple.ScriptEditor2),
   both of which allow you to move or rename an application without
   changing references to it
-- asks applications to print documents, something the OS X Finder
-  didn't get until Mac OS X 10.4
-- allows you to pipe output to GUI applictions
-- launches applications in the background
-- displays file information including type, creator, bundle ID,
-  data and resource fork sizes, dates and version
+- lets you find applications rather than opening them
+- asks applications to print documents
+- allows you to pipe output to any GUI application (not just TextEdit)
+- displays extensive file, folder and volume information including type,
+  creator, bundle ID, sizes, dates and versions (-f)
 - reports errors intelligibly
 - and much more!
 
@@ -34,10 +30,10 @@ Assign a shell command to your favorite OS X text or graphics editor.
 Go to your favorite Web site with a few keystrokes.
 
 Like 'open', 'launch' provides one half of the round-trip between
-Terminal.app and the Finder.  You can drag and drop icons or proxy icons
-into Terminal.app to insert their paths into command lines.  To go in the
-other direction, just type 'launch .' (or 'open .') to open a Finder window
-showing the current directory.
+Terminal and the Finder.  You can drag and drop icons or proxy icons
+into Terminal to insert their paths into command lines.  To go in the
+other direction, just type 'launch .' (or 'open .') to open a Finder
+window showing the current directory.
 
 INSTALLATION
 ------------
@@ -48,9 +44,10 @@ is in the default path.  You should subsequently be able to use
 modify the install line as appropriate.
 
 % sudo /usr/bin/install -d /usr/local/bin /usr/local/man/man1
-% sudo /usr/bin/install -c launch /usr/local/bin
-% sudo /usr/bin/install -c launch.1 /usr/local/man/man1
-% rehash
+% sudo chmod 755 /usr/local/bin /usr/local/man /usr/local/man/man1
+% sudo /usr/bin/install launch /usr/local/bin
+% sudo /usr/bin/install -m 644 launch.1 /usr/local/man/man1
+% rehash				# if necessary
 
 Uninstallation:
 
@@ -61,13 +58,14 @@ COMPILATION
 
 An Xcode project, 'launch.xcodeproj', is included.  A precompiled
 Universal binary is also provided.  'launch' was developed and tested
-under OS X 10.8.5 with Xcode 5.0.2, and does not require any
-additional software to build.
+under OS X 10.9.1 with Xcode 5.0.2, and should build on OS X 10.8 or
+later.
 
 USAGE
 -----
 
-Just type 'launch' by itself to receive usage information.
+Just type 'launch' by itself to receive usage information.  See the
+manual page (man launch) for more information.
 
 Some examples:
 
@@ -87,12 +85,13 @@ Some examples:
 [Your preferred email client opens a new message to comment on launch]
 
 % launch -f /Applications/Preview.app
-/Applications/Preview.app: OS X application package
+/Applications/Preview.app: scriptable OS X application package 
 	type: 'APPL'	creator: 'prvw'
 	architecture: Intel x86-64
 	bundle ID: com.apple.Preview
-	version: 6.0.1
+	version: 7.0
 	kind: Application
+	attributes: extension hidden
 	content type ID: com.apple.application-bundle
 	contents: 1 item
 [...]
@@ -124,6 +123,7 @@ A. The -f option to launch can help.  Say you have Messages in your
 	type: 'APPL'	creator: 'fez!'
 	architecture: Intel x86-64
 	bundle ID: com.apple.iChat
+[...]
 
 Note that bundle IDs are not case-sensitive: com.barebones.BBEdit is
 the same as com.barebones.bbedit.
@@ -132,19 +132,20 @@ the same as com.barebones.bbedit.
 Q. Why does application X open a file with a name beginning with 
 'launch-stationery-'?  
 
-A. Your application does not support stationery.  Applications which
-support stationery respond to it by creating a new untitled document
-with the contents of the stationery.  Most Cocoa applications, such as
-TextEdit, do not support stationery.  (Omni Group applications are a
-notable exception.)  If you're looking for a text editor which
-supports stationery, try BBEdit or TextWrangler.
+A. Application X does not support stationery.  When you open a
+stationery pad in an application which supports it, the application
+creates a new untitled document with the contents of the stationery.
+Most Cocoa applications, such as TextEdit, do not support stationery.
+(Omni Group applications are a notable exception.)  If you're looking
+for a text editor which supports stationery, try BBEdit or
+TextWrangler.
 
 For the curious: launch processes input by simultaneously reading it
-and writing to a temporary stationery file.  Once reading is complete,
-launch opens the stationery file with your selected application, and
-deletes the stationery after one minute (as a safeguard, it is not
-possible to accurately gauge how long it will take for the application
-to open the stationery).
+and writing to a temporary stationery pad file.  Once reading is
+complete, launch opens the stationery with your selected application,
+then deletes the stationery after one minute (as a conservative
+measure, since it is not possible to accurately gauge how long it will
+take for the application to open the stationery).
 
 
 Q. Why can't I use -f with -c to get info on an application with a
@@ -158,7 +159,7 @@ launch: can't get information (-f) on item(s) using an application (-u, -c, -i, 
 
 use:
 
-% launch -f "`launch -nc 'Doug'`"
+% launch -f "`launch -nc 'sprf`"
 /Applications/System Preferences.app: scriptable OS X application package
 	type: 'APPL'	creator: 'sprf'
 	architecture: Intel 80x86, Intel x86-64
@@ -222,26 +223,30 @@ VERSION HISTORY
 ---------------
 
 1.2 - unreleased
- - -l: no longer use Internet Config, can specify application
+ - -l: no longer use Internet Config; can specify application
  - display alias targets, where available, with -f
  - display detailed volume information with -f
  - display information on special files and named pipes with -f
  - display total file size (including all forks and metadata)
    instead of resource fork size with -f
- - restore -o: pass command-line arguments, fixed as of 10.5
+ - display hard link count with -f (if > 1)
+ - display label information with -f
+ - display file attributes with -f (e.g., extension hidden)
+ - restore -o: pass command-line arguments, fixed as of Mac OS X 10.5
  - read Info.plists embedded in Mach-O binaries
  - fix incorrect error messages with -u
  - fix symbolic links being identified as aliases everywhere
  - fix incorrect size display for items over 4 GB
  - fix display of [can't access package contents] for non-packages
  - update error codes
- - remove support for Classic and resource fork versions
+ - remove support for Classic
+ - remove support for resource fork versions
  - remove display of backup date (no supported way to retrieve it)
  - remove display of "in use" status (no supported way to retrieve it)
- - eliminate use of API deprecated as of OS X 10.8
+ - eliminate use of most API deprecated as of OS X 10.8
  - now requires OS X 10.8 or later
 1.1 - 30 October 2006
- - -L: send "launch" (ascr/noop) event to app, bypasses automatic
+ - -L: send "launch" (ascr/noop) event to app - bypasses automatic
    opening of untitled document, etc.
  - -o: pass command-line arguments (broken, r. 4474993)
  - display content type ID (UTI)    
