@@ -789,11 +789,11 @@ Boolean sInt64Prop(CFDictionaryRef props, CFStringRef key, SInt64 *sInt64Ptr) {
 }
 
 Boolean printSizeProp(CFDictionaryRef props, CFStringRef key, char *label) {
-    SInt64 sInt64;
-    Boolean retrieved = sInt64Prop(props, key, &sInt64);
+    SInt64 size;
+    Boolean retrieved = sInt64Prop(props, key, &size);
     if (retrieved) {
         printf("\t%s: ", label);
-        printSize(sInt64);
+        printSize(size);
         printf("\n");
     }
 
@@ -812,11 +812,11 @@ Boolean printSizesProp(CFDictionaryRef props, CFStringRef logicalSizeKey, CFStri
         if (physicalSize == 0) {
             printf("zero bytes on disk (zero bytes used)\n");
         } else {
-            printPhysicalSize(physicalSize);
+            printSize(physicalSize);
             printf(" on disk (%llu bytes used)\n", logicalSize);
         }
     } else {
-        printPhysicalSize(logicalSize || physicalSize);
+        printSize(logicalSize || physicalSize);
     }
     return true;
 }
