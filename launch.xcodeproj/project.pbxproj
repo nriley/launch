@@ -142,6 +142,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx10.8;
+				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Development;
 		};
@@ -152,6 +153,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx10.8;
+				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Deployment;
 		};
