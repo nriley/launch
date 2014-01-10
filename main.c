@@ -44,8 +44,9 @@ struct {
     Boolean appSpecified;
     Boolean forceURLs;
     enum { ACTION_FIND, ACTION_FIND_ITEMS,
-	   ACTION_OPEN, ACTION_OPEN_ITEMS,
-	   ACTION_INFO_ITEMS, ACTION_LAUNCH_URLS } action;
+           ACTION_INFO, ACTION_INFO_ITEMS,
+           ACTION_OPEN, ACTION_OPEN_ITEMS,
+           ACTION_LAUNCH_URLS } action;
 } OPTS =
 {
     kLSUnknownCreator, NULL, NULL, false, false,
@@ -97,10 +98,8 @@ static errList ERRS = {
 };
 
 void __attribute__((__noreturn__)) usage() {
-    fprintf(stderr, "usage: %s [-nplswbmhLU] [-c creator] [-i bundleID] [-u URL] [-a name|path] [-o argument] [item ...] [-]\n"
-                    "   or: %s [-npflswbmhLU] "
-                    "[-o argument] "
-                    "item ...\n", APP_NAME, APP_NAME);
+    fprintf(stderr, "usage: %s [-npflswbmhLU] [-c creator] [-i bundleID] [-u URL] [-a name|path] [-o argument] [item ...] [-]\n",
+            APP_NAME);
     fprintf(stderr,
         "  -n            print matching paths/URLs instead of opening them\n"
         "  -p            ask application(s) to print document(s)\n"
@@ -379,7 +378,7 @@ void getargs(int argc, char * const argv[]) {
             break;
         case 'f':
             if (OPTS.action != ACTION_DEFAULT) errexit("choose only one of -n, -p, -f, -l options");
-            OPTS.action = ACTION_INFO_ITEMS;
+            OPTS.action = ACTION_INFO;
             break;
         case 'l':
             if (OPTS.action != ACTION_DEFAULT) errexit("choose only one of -n, -p, -f, -l options");
@@ -464,7 +463,7 @@ void getargs(int argc, char * const argv[]) {
     argv += optind;
 
     if ( (OPTS.action == ACTION_FIND || OPTS.action == ACTION_LAUNCH_URLS ||
-	  OPTS.action == ACTION_INFO_ITEMS) && LPARAMS.flags != DEFAULT_LAUNCH_FLAGS)
+	  OPTS.action == ACTION_INFO) && LPARAMS.flags != DEFAULT_LAUNCH_FLAGS)
         errexit("options -s, -b, -m, -h apply to application launch (not -n, -f or -l)");
 
     if (OPTS.creator == kLSUnknownCreator && OPTS.bundleID == NULL && OPTS.name == NULL) {
@@ -475,13 +474,15 @@ void getargs(int argc, char * const argv[]) {
                 OPTS.action = ACTION_FIND_ITEMS;
             if (OPTS.action == ACTION_OPEN)
                 OPTS.action = ACTION_OPEN_ITEMS;
+            if (OPTS.action == ACTION_INFO)
+                OPTS.action = ACTION_INFO_ITEMS;
         }
     } else {
 	if (LPARAMS.application != NULL)
 	    errexit("application URL (argument of -u) incompatible with matching by -c, -i, -a");
     }
 
-    if (OPTS.action == ACTION_INFO_ITEMS && OPTS.appSpecified)
+    if (OPTS.action == ACTION_INFO && argc > 0)
 	errexit("can't get information (-f) on item(s) using an application (-u, -c, -i, -a)");
 
     if (argc == 0 && OPTS.action == ACTION_OPEN && LPARAMS.flags & kLSLaunchAndPrint)
@@ -1325,6 +1326,9 @@ int main (int argc, char * const argv[]) {
     case ACTION_FIND:
 	printPathFromURL(CFURLCreateFromFSRef(NULL, LPARAMS.application), stdout);
 	break;
+    case ACTION_INFO:
+        printInfoFromURL(CFURLCreateFromFSRef(NULL, LPARAMS.application), NULL);
+        break;
     case ACTION_OPEN:
 	err = openItems();
 	if (err != noErr) osstatusexit(err, "can't open application");
@@ -1333,6 +1337,10 @@ int main (int argc, char * const argv[]) {
         CFArrayApplyFunction(ITEMS, CFRangeMake(0, CFArrayGetCount(ITEMS)),
                              (CFArrayApplierFunction) printPathFromURL, stdout);
 	break;
+    case ACTION_INFO_ITEMS:
+        CFArrayApplyFunction(ITEMS, CFRangeMake(0, CFArrayGetCount(ITEMS)),
+                             (CFArrayApplierFunction) printInfoFromURL, NULL);
+        break;
     case ACTION_OPEN_ITEMS:
 	err = openItems();
 	if (err != noErr) osstatusexit(err, "can't open items");
@@ -1340,10 +1348,6 @@ int main (int argc, char * const argv[]) {
     case ACTION_LAUNCH_URLS:
         err = openItems();
         if (err != noErr) osstatusexit(err, "can't launch URLs");
-        break;
-    case ACTION_INFO_ITEMS:
-        CFArrayApplyFunction(ITEMS, CFRangeMake(0, CFArrayGetCount(ITEMS)),
-			     (CFArrayApplierFunction) printInfoFromURL, NULL);
         break;
     }
 
