@@ -217,6 +217,7 @@ VERSION HISTORY
  - read Info.plists embedded in Mach-O binaries
  - fix incorrect error messages with -u
  - fix symbolic links being identified as aliases everywhere
+   (and display their targets)
  - fix incorrect size display for items over 4 GB
  - fix display of [can't access package contents] for non-packages
  - update error codes

@@ -1265,8 +1265,20 @@ void printInfoFromURL(CFURLRef url, void *context) {
         printMoreInfoForVolume(url);
     }
 
-    // alias target (note: may modify url)
-    if (info.flags & kLSItemInfoIsAliasFile && haveFSRef) {
+    if (info.flags & kLSItemInfoIsSymlink) {
+        // symlink target
+        char target[PATH_MAX];
+        ssize_t targetLength = readlink(strBuffer, target, PATH_MAX);
+        if (targetLength == -1)
+            printf("\t[can't read symbolic link target: %s]\n", strerror(errno));
+        else {
+            printf("\ttarget: ");
+            fflush(stdout);
+            write(STDOUT_FILENO, target, targetLength);
+            printf("\n");
+        }
+    } else if (info.flags & kLSItemInfoIsAliasFile && haveFSRef) {
+        // alias target (note: may modify url)
         CFErrorRef error;
         CFDataRef bookmarkData = CFURLCreateBookmarkDataFromFile(NULL, url, &error);
         if (bookmarkData == NULL) {
