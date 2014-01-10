@@ -1,21 +1,19 @@
-.Dd Mon Oct 30 2006      \" DATE 
+.Dd Fri Jan 10 2014      \" DATE
 .Dt LAUNCH 1 LOCAL	 \" Program name and manual section number 
-.Os launch 1.1
+.Os launch 1.2
 .Sh NAME
 .Nm launch
-.Nd find, open, print, or get information about files, folders, disks and URLs
+.Nd find, open, print, or get information on files, folders, volumes and URLs
 .Sh SYNOPSIS
 .Nm launch
-.Op Fl npswbmhCXLU          \" [-npswbmhCXLU]
+.Op Fl npflswbmhLU          \" [-npflswbmhLU]
 .Op Fl c Ar creator         \" [-c creator]
 .Op Fl i Ar bundleID        \" [-i bundleID]
 .Op Fl u Ar URL             \" [-u URL]
 .Op Fl a Ar name | Ar path  \" [-a name|path]
+.Op Fl o Ar argument        \" [-o argument]
 .Op Ar item ...             \" [item ...]
 .Op Ar -                    \" [-]
-.Nm 
-.Op Fl npflswbmhCXLU
-.Ar item ...
 .Sh DESCRIPTION
 The
 .Nm
@@ -30,25 +28,24 @@ items.
 invoked with a file or URL argument will open the URL directly or in
 your preferred helper application. Applications can be specified by
 their four-character creators (e.g. 'ToyS') or Java-style bundle ID
-(e.g. com.apple.scripteditor).
+(e.g. com.apple.ScriptEditor2).
 .Pp
 .Nm
-can ask applications to print documents, a feature the OS X Finder is
-still missing.  It can open applications in the background; can open
-multiple copies of applications; can open Carbon applications in
-Classic, or prevent Classic from starting; and can show information
-about any item on disk, including file type, creator, data and
-resource fork sizes, dates, and bundle ID.
+can ask applications to print documents.  It can open applications in
+the background; can open multiple copies of applications; and can show
+information about any item in a filesystem, including file type,
+creator, data fork and total sizes, dates, and bundle ID.
 .Pp
 The options to
 .Nm
-are divided in three sections according to purpose. You can give
+are divided in three sections according to purpose. 
 .Nm
-a reference to an application in many ways, using the matching
+can search for an application in several ways, using the matching
 options. Once
 .Nm
-has identified one or more items, the action options indicate what to
-do with these items. Finally, if the action involves launching an
+has identified one or more items, the action options control what
+.Nm
+does with these items. Finally, if the action involves launching an
 application, the launch options allow further customization.
 .Ss Matching options
 .Bl -tag -width -indent
@@ -73,7 +70,7 @@ or at the path
 .El
 .Pp
 In addition to the above, you can specify applications, documents,
-folders, disks and URLs as item arguments.
+folders, volumes and URLs as item arguments.
 .Ss Action options
 .Bl -tag -width -indent
 .It Fl n
@@ -81,15 +78,15 @@ Print matching paths/URLs instead of opening them.
 .It Fl p
 Ask application(s) to print document(s).
 .It Fl f
-Display information about item(s).
+Display information about matched application or item(s).
 .It Fl l
-Launch URLs, treating "http://" URLs as Web sites instead of WebDAV
-resources.
+Launch URLs, treating schemeless URLs (e.g. "www.apple.com" or
+"launchsw@sabi.net") as Web sites and email addresses.
 .El
 .Ss Launch options
 .Bl -tag -width -indent
-.It Fl s
-Launch target(s) as superuser, authenticating if needed.
+\" .It Fl s
+\" Launch target(s) as superuser, authenticating if needed.
 .It Fl w
 Wait for application to finish opening before exiting.
 .It Fl b
@@ -98,11 +95,6 @@ Launch application in the background.
 Launch application again, even if already running.
 .It Fl h
 Hide application after it finishes opening.
-.It Fl C
-Force CFM/PEF Carbon application to open in Classic.
-.It Fl X
-Don't start the Classic environment for this Classic application if
-Classic isn't running.
 .It Fl L
 Suppress the normal opening behavior of the application; for example,
 opening an untitled document.  (This works by sending a "launch", or
@@ -112,6 +104,16 @@ Interpret items as URLs, even if files with the same names as the URLs
 exist.  (This was the default behavior in
 .Nm
 1.0.)
+.It Fl o Ar argument
+Pass
+.Ar argument
+as an argument to the application.  Some graphical applications
+support command-line arguments.  For example, you can open the Mozilla
+Firefox Profile Manager with
+.Ic launch -i org.mozilla.firefox -o -ProfileManager.
+You can specify
+.Fl o Ar argument
+more than once with additional arguments.
 .El
 .Sh SEE ALSO 
 .\" List links in ascending order by section, alphabetically within a section.
@@ -119,14 +121,6 @@ exist.  (This was the default behavior in
 .Xr appswitch 1 ,
 .Xr GetFileInfo 1 ,
 .Xr open 1
-.Sh BUGS              \" Document known, unremedied bugs
-The
-.Fl h
-option requires the
-.Fl b
-option to be used as well, or Cocoa applications will not hide on
-startup.  This is a Mac OS X bug which is still unfixed as of Mac OS X
-10.4.8.
 .Sh AUTHOR
 .An "Nicholas Riley" Aq launchsw@sabi.net
 .Pp
