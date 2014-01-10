@@ -480,9 +480,8 @@ void getargs(int argc, char * const argv[]) {
             if (OPTS.action == ACTION_INFO)
                 OPTS.action = ACTION_INFO_ITEMS;
         }
-    } else {
-	if (LPARAMS.application != NULL)
-	    errexit("application URL (argument of -u) incompatible with matching by -c, -i, -a");
+    } else if (LPARAMS.application != NULL) {
+        errexit("application path/URL (argument of -a/-u) incompatible with matching by -c, -i");
     }
 
     if (OPTS.action == ACTION_INFO && argc > 0)
