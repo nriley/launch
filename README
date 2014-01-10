@@ -225,7 +225,8 @@ VERSION HISTORY
  - remove display of backup date (no supported way to retrieve it)
  - remove display of "in use" status (no supported way to retrieve it)
  - eliminate use of most API deprecated as of OS X 10.8
- - now requires OS X 10.8 or later
+ - 32-bit/64-bit Intel binary, built for OS X 10.8 and later
+   (tested on 10.8.5 and 10.9.1)
 1.1 - 30 October 2006
  - -L: send "launch" (ascr/noop) event to app - bypasses automatic
    opening of untitled document, etc.

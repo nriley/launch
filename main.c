@@ -146,7 +146,7 @@ char *osstatusstr(OSStatus err) {
     size = (strlen(errDesc) + 10) * sizeof(char);
     str = (char *)malloc(size);
     if (str != NULL)
-        snprintf(str, size, "%s (%ld)", errDesc, err);
+        snprintf(str, size, "%s (%d)", errDesc, (int)err);
     else
         str = FAILED_STR;
     return str;
@@ -613,7 +613,7 @@ void printPhysicalSize(UInt64 physicalSize) {
     UInt32 bigSize = physicalSize >> 32, littleSize = physicalSize;
     if (bigSize == 0) {
         if (littleSize < 1024)
-            printf("%lu bytes", littleSize);
+            printf("%u bytes", (unsigned int)littleSize);
         else {
             UInt32 adjSize = littleSize >> 10;
             if (adjSize < 1024) printf("%.1f KB", DFORMAT(littleSize));
@@ -631,7 +631,7 @@ void printPhysicalSize(UInt64 physicalSize) {
             printf("%.2f GB", (float)(bigSize * 4 + littleSize / 1073741824.));
         } else {
             bigSize >>= 8;
-            printf("%lu TB", bigSize);
+            printf("%u TB", (unsigned int)bigSize);
         }
     }
 }
@@ -1202,7 +1202,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
     }
     if (version != NULL) {
 	printf("\tversion: %s", utf8StrFromCFString(version));
-	if (intVersion != 0) printf(" [0x%lx = %lu]", intVersion, intVersion);
+	if (intVersion != 0) printf(" [0x%x = %lu]", (unsigned int)intVersion, intVersion);
 	putchar('\n');
 	CFRelease(version);
     }

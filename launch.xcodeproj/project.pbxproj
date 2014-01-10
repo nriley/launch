@@ -7,20 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		72E67D52187F9EF80036C093 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72E67D51187F9EF80036C093 /* CoreServices.framework */; };
+		72E67D54187F9EFE0036C093 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72E67D53187F9EFE0036C093 /* CoreFoundation.framework */; };
 		E194196509C40AFB00266191 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* main.c */; settings = {ATTRIBUTES = (); }; };
-		E194196709C40AFB00266191 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09AB6884FE841BABC02AAC07 /* CoreFoundation.framework */; };
-		E194196909C40AFB00266191 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5E819BF0198DFF701AEEDB1 /* Carbon.framework */; };
-		E194196A09C40AFB00266191 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F579CF4B019A1C6D01AEEDB1 /* Security.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* main.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; tabWidth = 8; };
-		09AB6884FE841BABC02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		72E67D51187F9EF80036C093 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		72E67D53187F9EFE0036C093 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		E194197009C40AFB00266191 /* launch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = launch; sourceTree = BUILT_PRODUCTS_DIR; };
 		F574340B01B8A47B01AEEDB1 /* VERSION */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = VERSION; sourceTree = "<group>"; };
-		F579CF4B019A1C6D01AEEDB1 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = /System/Library/Frameworks/Security.framework; sourceTree = "<absolute>"; };
 		F5C0CA9501B5740C01AEEDB1 /* README */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		F5E819BF0198DFF701AEEDB1 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,9 +26,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E194196709C40AFB00266191 /* CoreFoundation.framework in Frameworks */,
-				E194196909C40AFB00266191 /* Carbon.framework in Frameworks */,
-				E194196A09C40AFB00266191 /* Security.framework in Frameworks */,
+				72E67D54187F9EFE0036C093 /* CoreFoundation.framework in Frameworks */,
+				72E67D52187F9EF80036C093 /* CoreServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,9 +56,8 @@
 		08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				F5E819BF0198DFF701AEEDB1 /* Carbon.framework */,
-				09AB6884FE841BABC02AAC07 /* CoreFoundation.framework */,
-				F579CF4B019A1C6D01AEEDB1 /* Security.framework */,
+				72E67D53187F9EFE0036C093 /* CoreFoundation.framework */,
+				72E67D51187F9EF80036C093 /* CoreServices.framework */,
 			);
 			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
@@ -142,33 +138,29 @@
 		E194195709C40AD400266191 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = c99;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				SDKROOT = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx10.8;
 			};
 			name = Development;
 		};
 		E194195809C40AD400266191 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = c99;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				SDKROOT = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx10.8;
 			};
 			name = Deployment;
 		};
 		E194196D09C40AFB00266191 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = launch;
-				SDKROOT = macosx10.8;
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
@@ -180,11 +172,8 @@
 		E194196E09C40AFB00266191 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				INSTALL_PATH = "$(inherited)";
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = launch;
-				SDKROOT = macosx10.8;
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
