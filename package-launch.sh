@@ -11,15 +11,14 @@ sudo /usr/bin/install launch /usr/local/bin
 sudo /usr/bin/install -m 644 launch.1 /usr/local/man/man1
 chmod 755 launch
 chmod 644 launch.1
-VERSION=`cat VERSION` TARBALL="launch-$VERSION.tar.gz"
+VERSION=`cat VERSION` TARBALL="$PWD/launch-$VERSION.tar.gz"
 rm -f ../launch-$VERSION $TARBALL
-dir=$PWD
 ln -s $PWD ../launch-$VERSION
 cd ..
 /usr/bin/tar \
     --exclude=.DS_Store --exclude=.git\* --exclude=.gdb_history \
     --exclude=build --exclude=\*.xcworkspace --exclude=xcuserdata \
     --exclude=launch-\*.tar.gz \
-    -zcLf $dir/launch-$VERSION.tar.gz launch-$VERSION
-rm -f ../launch-$VERSION
+    -zcLf $TARBALL launch-$VERSION
+rm -f launch-$VERSION
 scp $TARBALL osric:web/nriley/software/
