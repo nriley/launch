@@ -168,14 +168,17 @@ char *cferrorstr(CFErrorRef error) {
     CFStringRef string = CFErrorCopyFailureReason(error);
     if (string == NULL)
         string = CFErrorCopyDescription(error); // will never return NULL
+    CFRelease(error);
+
     static char *str = NULL;
     if (str != NULL && str != FAILED_STR) {
         free(str);
         str = NULL;
     }
-    str = mallocedUTF8StrFromCFString(string) || FAILED_STR;
+    str = mallocedUTF8StrFromCFString(string);
+    if (str == NULL)
+        str = FAILED_STR;
     CFRelease(string);
-    CFRelease(error);
     return str;
 }
 
