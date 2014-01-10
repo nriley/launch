@@ -31,9 +31,9 @@ Go to your favorite Web site with a few keystrokes.
 
 Like 'open', 'launch' provides one half of the round-trip between
 Terminal and the Finder.  You can drag and drop icons or proxy icons
-into Terminal to insert their paths into command lines.  To go in the
-other direction, just type 'launch .' (or 'open .') to open a Finder
-window showing the current directory.
+onto a Terminal window to insert their paths into command lines.  To
+go in the other direction, type 'launch .' (or 'open .') to open a
+Finder window showing the current directory.
 
 INSTALLATION
 ------------
