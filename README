@@ -10,15 +10,15 @@ WHAT IS IT?
 -----------
 
 Apple provides a simple command-line launching program called 'open'
-with OS X.  'launch' offers several options that 'open' doesn't; it:
+with OS X.  'launch' offers several options that 'open' doesn't.  It:
 
 - opens "slack" URLs (e.g. apple.com) and email addresses (-l)
 - lets you specify applications by their four-character creator
   (e.g. 'ToyS') or Java-style bundle ID (e.g. com.apple.ScriptEditor2),
   both of which allow you to move or rename an application without
   changing references to it
-- lets you find applications rather than opening them
-- asks applications to print documents
+- lets you find applications rather than opening them (-n)
+- asks applications to print documents (-p)
 - allows you to pipe output to any GUI application (not just TextEdit)
 - displays extensive file, folder and volume information including type,
   creator, bundle ID, sizes, dates and versions (-f)
