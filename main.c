@@ -1202,10 +1202,11 @@ void printInfoFromURL(CFURLRef url, void *context) {
     }
     if (version != NULL) {
 	printf("\tversion: %s", utf8StrFromCFString(version));
-	if (intVersion != 0) printf(" [0x%x = %lu]", (unsigned int)intVersion, intVersion);
+	if (intVersion != 0) printf(" [0x%x = %u]", (unsigned int)intVersion, (unsigned int)intVersion);
 	putchar('\n');
 	CFRelease(version);
     }
+
 
     // kind string
     err = LSCopyKindStringForURL(url, &kind);
