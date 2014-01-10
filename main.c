@@ -929,7 +929,9 @@ Boolean valence(CFURLRef url, SInt64 *count) {
         return false;
 
     static char strBuffer[STRBUF_LEN];
-    if (!CFStringGetFileSystemRepresentation(path, strBuffer, STRBUF_LEN))
+    Boolean result = CFStringGetFileSystemRepresentation(path, strBuffer, STRBUF_LEN);
+    CFRelease(path);
+    if (!result)
         return false;
 
     DIR *dir = opendir(strBuffer);
