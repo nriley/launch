@@ -33,8 +33,6 @@
 
 const char *APP_NAME;
 
-#define VERSION "1.2d1"
-
 #define STRBUF_LEN 1024
 #define ACTION_DEFAULT ACTION_OPEN
 
@@ -97,6 +95,8 @@ static errList ERRS = {
     { 0, NULL }
 };
 
+const char *utf8StrFromCFString(CFStringRef string);
+
 void __attribute__((__noreturn__)) usage() {
     fprintf(stderr, "usage: %s [-npflswbmhLU] [-c creator] [-i bundleID] [-u URL] [-a name|path] [-o argument] [item ...] [-]\n",
             APP_NAME);
@@ -121,8 +121,9 @@ void __attribute__((__noreturn__)) usage() {
         "  -o argument   pass argument to application (may be specified more than once)\n"
         "A document may be a file, folder, or disk - whatever the application can open.\n"
         "An item may be a file, folder, disk, or URL.\n\n");
-    fprintf(stderr, "launch "VERSION" (c) 2001-14 Nicholas Riley <http://sabi.net/nriley/software/>.\n"
-	            "Please send bugs, suggestions, etc. to <launchsw@sabi.net>.\n");
+    const char *version = utf8StrFromCFString(CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(), CFSTR("CFBundleShortVersionString")));
+    fprintf(stderr, "launch %s (c) 2001-14 Nicholas Riley <http://sabi.net/nriley/software/>.\n"
+            "Please send bugs, suggestions, etc. to <launchsw@sabi.net>.\n", version);
 
     exit(1);
 }

@@ -14,10 +14,10 @@
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* main.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; tabWidth = 8; };
+		7280FD1718809B1F00B7626B /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		72E67D51187F9EF80036C093 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		72E67D53187F9EFE0036C093 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		E194197009C40AFB00266191 /* launch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = launch; sourceTree = BUILT_PRODUCTS_DIR; };
-		F574340B01B8A47B01AEEDB1 /* VERSION */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = VERSION; sourceTree = "<group>"; };
 		F5C0CA9501B5740C01AEEDB1 /* README */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -39,6 +39,7 @@
 			children = (
 				08FB7795FE84155DC02AAC07 /* Source */,
 				72CD182E18779F3E00F4ACCE /* Documentation */,
+				72F53A7218809CA6003DA983 /* Resources */,
 				08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */,
 				19C28FBDFE9D53C911CA2CBB /* Products */,
 			);
@@ -74,9 +75,16 @@
 			isa = PBXGroup;
 			children = (
 				F5C0CA9501B5740C01AEEDB1 /* README */,
-				F574340B01B8A47B01AEEDB1 /* VERSION */,
 			);
 			name = Documentation;
+			sourceTree = "<group>";
+		};
+		72F53A7218809CA6003DA983 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7280FD1718809B1F00B7626B /* Info.plist */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -139,10 +147,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CURRENT_PROJECT_VERSION = 2;
 				GCC_C_LANGUAGE_STANDARD = c99;
+				INFOPLIST_FILE = Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				OTHER_LDFLAGS = (
+					"-sectcreate",
+					__TEXT,
+					__info_plist,
+					"$(INFOPLIST_FILE)",
+				);
 				SDKROOT = macosx10.8;
 				STRIP_INSTALLED_PRODUCT = NO;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Development;
 		};
@@ -150,10 +167,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CURRENT_PROJECT_VERSION = 2;
 				GCC_C_LANGUAGE_STANDARD = c99;
+				INFOPLIST_FILE = Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				OTHER_LDFLAGS = (
+					"-sectcreate",
+					__TEXT,
+					__info_plist,
+					"$(INFOPLIST_FILE)",
+				);
 				SDKROOT = macosx10.8;
 				STRIP_INSTALLED_PRODUCT = NO;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Deployment;
 		};
