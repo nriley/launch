@@ -183,7 +183,7 @@ char *cferrorstr(CFErrorRef error) {
     return str;
 }
 
-void  __attribute__((__noreturn__)) osstatusexit(OSStatus err, const char *fmt, ...) {
+void __attribute__((__noreturn__)) osstatusexit(OSStatus err, const char *fmt, ...) {
     va_list ap;
     const char *errDesc = osstatusstr(err);
     va_start(ap, fmt);
