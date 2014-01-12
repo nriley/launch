@@ -210,8 +210,8 @@ VERSION HISTORY
  - display information on special files and named pipes with -f
  - display total file size (including all forks and metadata)
    instead of resource fork size with -f
- - display hard link count with -f (if > 1)
- - display label information with -f
+ - display hard link count (if > 1) with -f
+ - display label (or tags, on 10.9+) with -f
  - display file attributes with -f (e.g., extension hidden)
  - restore -o: pass command-line arguments, fixed as of Mac OS X 10.5
  - read Info.plists embedded in Mach-O binaries

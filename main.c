@@ -1210,7 +1210,6 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	CFRelease(version);
     }
 
-
     // kind string
     err = LSCopyKindStringForURL(url, &kind);
     if (err != fnfErr) { // returned on device nodes
@@ -1228,12 +1227,25 @@ void printInfoFromURL(CFURLRef url, void *context) {
 
     SInt64 labelNumber;
     if (sInt64Prop(props, kCFURLLabelNumberKey, &labelNumber) && labelNumber > 0) {
-        printf("\tlabel: ");
-        char *labelName;
-        if (strProp(props, kCFURLLocalizedLabelKey, &labelName))
-            printf("%s (%lld)\n", labelName, labelNumber);
-        else
-            printf("%lld\n", labelNumber);
+        CFArrayRef tags;
+        CFErrorRef error = NULL;
+        if (CFURLCopyResourcePropertyForKey(url, CFSTR("NSURLTagNamesKey"), &tags, &error) && tags != NULL) {
+            // tags (10.9+)
+            CFStringRef tagString = CFStringCreateByCombiningStrings(NULL, tags, CFSTR(", "));
+            CFRelease(tags);
+            printf("\ttags: %s\n", utf8StrFromCFString(tagString));
+            CFRelease(tagString);
+        } else {
+            if (error != NULL)
+                CFRelease(error); // don't care
+            // label (10.8)
+            printf("\tlabel: ");
+            char *labelName;
+            if (strProp(props, kCFURLLocalizedLabelKey, &labelName))
+                printf("%s (%lld)\n", labelName, labelNumber);
+            else
+                printf("%lld\n", labelNumber);
+        }
     }
 
     if (haveFSRef) {
