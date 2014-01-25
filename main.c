@@ -1100,7 +1100,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
         kCFURLContentModificationDateKey,
         kCFURLLinkCountKey,
         kCFURLLabelNumberKey, kCFURLLocalizedLabelKey,
-        kCFURLIsExcludedFromBackupKey, // triggers <http://www.openradar.me/15772932>
+        // kCFURLIsExcludedFromBackupKey triggers <http://www.openradar.me/15772932>
         kCFURLFileResourceTypeKey,
         kCFURLFileSizeKey, kCFURLFileAllocatedSizeKey,
         kCFURLTotalFileSizeKey, kCFURLTotalFileAllocatedSizeKey
@@ -1112,14 +1112,8 @@ void printInfoFromURL(CFURLRef url, void *context) {
     }
     CFErrorRef error = NULL;
 
-    // work around <http://www.openradar.me/15772932>
-    CFStringRef urlString = CFURLGetString(url);
-    CFRetain(urlString);
-    CFIndex retainCountBefore = CFGetRetainCount(urlString);
     CFDictionaryRef props = CFURLCopyResourcePropertiesForKeys(url, keys, &error);
     CFRelease(keys);
-    if (retainCountBefore == CFGetRetainCount(urlString))
-        CFRelease(urlString); // make a noop after the bug is fixed
     if (props == NULL) {
         printf("[can't get more information: %s]\n", cferrorstr(error));
         return;
@@ -1222,7 +1216,22 @@ void printInfoFromURL(CFURLRef url, void *context) {
     printPropItemIfYes(props, kCFURLIsSystemImmutableKey, "system immutable");
     printPropItemIfYes(props, kCFURLIsUserImmutableKey, "user immutable (locked)");
     printPropItemIfYes(props, kCFURLHasHiddenExtensionKey, "extension hidden");
-    printPropItemIfYes(props, kCFURLIsExcludedFromBackupKey, "excluded from backup");
+    // XXX work around <http://www.openradar.me/15772932> and <http://www.openradar.me/15909530>
+    // printPropItemIfYes(props, kCFURLIsExcludedFromBackupKey, "excluded from backup");
+
+    // Not handling paths with embedded nulls here - already spent *hours* on this horrendously buggy API.
+    char *canonicalPath = realpath(strBuffer, NULL);
+    if (canonicalPath != NULL) {
+        CFURLRef canonicalURL = CFURLCreateFromFileSystemRepresentation(NULL, (const UInt8 *)canonicalPath, strlen(canonicalPath), false);
+
+        // Still get things wrong if excluded from UI.  Not going to implement matching myself.
+        if (canonicalURL != NULL && CSBackupIsItemExcluded(canonicalURL, NULL)) {
+            printf("%s excluded from backup", haveBooleanPropItem ? "," : "");
+            haveBooleanPropItem = true;
+            CFRelease(canonicalURL);
+        }
+        free(canonicalPath);
+    }
     endBooleanPropItemList("none");
 
     SInt64 labelNumber;
