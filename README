@@ -1,5 +1,5 @@
-launch 1.2 [12 January 2014]
-==========
+launch 1.2.1 [25 January 2014]
+============
 
 A command-line launcher for OS X in the spirit of open(1).
 
@@ -201,6 +201,14 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
+1.2.1 - 25 January 2014
+ - better work around a bug in OS X 10.8 and 10.9, causing crashes
+   using -f with a relative path to an item inside a package
+   (r. 15772932)
+ - work around an OS X bug in order to display "excluded from backup"
+   in more cases when an item is excluded from Time Machine.  Use
+   `tmutil isexcluded` if you want a correct answer in all cases
+   (r. 15909530)
 1.2 - 12 January 2014
  - -l: no longer use Internet Config; can specify application
  - allow getting information (-f) on an application located by
