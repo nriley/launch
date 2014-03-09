@@ -20,6 +20,7 @@
 
 #include <dirent.h>
 #include <unistd.h>
+#include <sys/attr.h>
 #include <sys/stat.h>
 #include <mach-o/fat.h>
 #include <mach-o/arch.h>
@@ -193,6 +194,15 @@ void __attribute__((__noreturn__)) osstatusexit(OSStatus err, const char *fmt, .
     exit(1);
 }
 
+void __attribute__((__noreturn__)) errnoexit(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    fprintf(stderr, "%s: ", APP_NAME);
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, ": %s\n", strerror(errno));
+    exit(1);
+}
+
 void __attribute__((__noreturn__)) errexit(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -296,31 +306,41 @@ CFURLRef normalizedURLFromPrefixSlack(CFStringRef prefix, CFStringRef slackStr) 
 }
 
 char *tempFile(int *fd) {
+    // create temporary file
     char *tmpDir = getenv("TMPDIR");
     const char * const tempTemplate = "/launch-stationery-XXXXXXXX";
-    char *tempPath;
-    OSStatus err;
-    FSRef fsr;
-    FSCatalogInfo catalogInfo;
-    FileInfo *fInfo;
 
-    // create temporary file
     if (tmpDir == NULL) tmpDir = "/tmp";
-    tempPath = (char *)malloc(strlen(tmpDir) + strlen(tempTemplate) + 1);
+    char *tempPath = (char *)malloc(strlen(tmpDir) + strlen(tempTemplate) + 1);
     if (tempPath == NULL) errexit("can't allocate memory");
     strcpy(tempPath, tmpDir);
     strcat(tempPath, tempTemplate);
     if ( (*fd = mkstemp(tempPath)) == -1)
         errexit("can't create temporary file '%s'", tempPath);
+
     // mark file as stationery
-    err = FSPathMakeRef((UInt8 *)tempPath, &fsr, NULL);
-    if (err != noErr) osstatusexit(err, "can't find '%s'", tempPath);
-    err = FSGetCatalogInfo(&fsr, kFSCatInfoFinderInfo, &catalogInfo, NULL, NULL, NULL);
-    if (err != noErr) osstatusexit(err, "can't get information for '%s'", tempPath);
-    fInfo = (FileInfo *)&(catalogInfo.finderInfo);
-    fInfo->finderFlags |= kIsStationery;
-    err = FSSetCatalogInfo(&fsr, kFSCatInfoFinderInfo, &catalogInfo);
-    if (err != noErr) osstatusexit(err, "can't set information for '%s'", tempPath);
+    struct attrlist attrList = {
+        .bitmapcount = ATTR_BIT_MAP_COUNT,
+        .commonattr = ATTR_CMN_FNDRINFO
+    };
+    struct {
+        u_int32_t length;
+        struct {
+            FileInfo basic;
+            ExtendedFileInfo extended;
+        } fileInfo;
+    } __attribute__((packed)) fileInfoAttrBuf;
+
+    if (getattrlist(tempPath, &attrList, &fileInfoAttrBuf, sizeof(fileInfoAttrBuf), FSOPT_NOFOLLOW))
+        errnoexit("can't get filesystem attributes of '%s'", tempPath);
+    if (fileInfoAttrBuf.length != sizeof(fileInfoAttrBuf))
+        errexit("invalid filesystem attributes length for '%s'", tempPath);
+
+    uint16_t finderFlags = CFSwapInt16BigToHost(fileInfoAttrBuf.fileInfo.basic.finderFlags);
+    finderFlags |= kIsStationery;
+    fileInfoAttrBuf.fileInfo.basic.finderFlags = CFSwapInt16HostToBig(finderFlags);
+    if (setattrlist(tempPath, &attrList, &fileInfoAttrBuf.fileInfo, sizeof(fileInfoAttrBuf.fileInfo), FSOPT_NOFOLLOW))
+        errnoexit("can't set filesystem attributes information for '%s'", tempPath);
 
     return tempPath;
 }
