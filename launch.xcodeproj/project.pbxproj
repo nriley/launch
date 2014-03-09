@@ -17,6 +17,7 @@
 		7280FD1718809B1F00B7626B /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		72E67D51187F9EF80036C093 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		72E67D53187F9EFE0036C093 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		E164F69018CD197A0028D1BB /* launch.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = launch.1; sourceTree = "<group>"; };
 		E194197009C40AFB00266191 /* launch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = launch; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5C0CA9501B5740C01AEEDB1 /* README */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -75,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				F5C0CA9501B5740C01AEEDB1 /* README */,
+				E164F69018CD197A0028D1BB /* launch.1 */,
 			);
 			name = Documentation;
 			sourceTree = "<group>";
