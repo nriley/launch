@@ -52,6 +52,74 @@ struct {
     ACTION_DEFAULT
 };
 
+// from <http://apple2.org.za/gswv/a2zine/GS.WorldView/Resources/ProDOS.File.Types.v2.0.txt>
+const char *PRODOS_TYPES[] = {
+    /*00*/"UNK", /*01*/"BAD", /*02*/"PCD", /*03*/"PTX",
+    /*04*/"TXT", /*05*/"PDA", /*06*/"BIN", /*07*/"FNT",
+    /*08*/"FOT", /*09*/"BA3", /*0A*/"DA3", /*0B*/"WPF",
+    /*0C*/"SOS", /*  */ NULL, /*  */ NULL, /*0F*/"DIR",
+    /*10*/"RPD", /*11*/"RPI", /*12*/"AFD", /*13*/"AFM",
+    /*14*/"AFR", /*15*/"SCL", /*16*/"PFS", /*  */ NULL,
+    /*  */ NULL, /*19*/"ADB", /*1A*/"AWP", /*1B*/"ASP",
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*20*/"TDM", /*21*/"IPS", /*22*/"UPV", /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*29*/"3SD", /*2A*/"8SC", /*2B*/"8OB",
+    /*2C*/"8IC", /*2D*/"8LD", /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*41*/"OCR", /*42*/"FTD", /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*50*/"GWP", /*51*/"GSS", /*52*/"GDB", /*53*/"DRW",
+    /*54*/"GDP", /*55*/"HMD", /*56*/"EDU", /*57*/"STN",
+    /*58*/"HLP", /*59*/"COM", /*  */ NULL, /*5B*/"ANM",
+    /*5C*/"MUM", /*5D*/"ENT", /*5E*/"DVU", /*  */ NULL,
+    /*60*/"PRE", /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*6B*/"BIO",
+    /*  */ NULL, /*6D*/"DVR", /*6E*/"PRE", /*6F*/"HDV",
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*A0*/"WP_", /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*AB*/"GSB",
+    /*AC*/"TDF", /*AD*/"BDF", /*  */ NULL, /*  */ NULL,
+    /*B0*/"SRC", /*B1*/"OBJ", /*B2*/"LIB", /*B3*/"S16",
+    /*B4*/"RTL", /*B5*/"EXE", /*B6*/"STR", /*B7*/"TSF",
+    /*B8*/"NDA", /*B9*/"CDA", /*BA*/"TOL", /*BB*/"DRV",
+    /*BC*/"LDF", /*BD*/"FST", /*  */ NULL, /*BF*/"DOC",
+    /*C0*/"PNT", /*C1*/"PIC", /*C2*/"ANI", /*C3*/"PAL",
+    /*  */ NULL, /*C5*/"OOG", /*C6*/"SCR", /*C7*/"CDV",
+    /*C8*/"FON", /*C9*/"FND", /*CA*/"ICN", /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*D5*/"MUS", /*D6*/"INS", /*D7*/"MDI",
+    /*D8*/"SND", /*  */ NULL, /*  */ NULL, /*DB*/"DBM",
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*E0*/"LBR", /*  */ NULL, /*E2*/"DTS", /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*  */ NULL, /*  */ NULL,
+    /*  */ NULL, /*  */ NULL, /*EE*/"R16", /*EF*/"PAS",
+    /*F0*/"CMD", /*F1*/"OVL", /*F2*/"UD2", /*F3*/"UD3",
+    /*F4*/"UD4", /*F5*/"BAT", /*F6*/"UD6", /*F7*/"UD7",
+    /*F8*/"PRG", /*F9*/"P16", /*FA*/"INT", /*FB*/"IVR",
+    /*FC*/"BAS", /*FD*/"VAR", /*FE*/"REL", /*FF*/"SYS"
+};
+
 // equivalent to kLSLaunchDefaults, but we can modify individual flags later
 #define DEFAULT_LAUNCH_FLAGS (kLSLaunchNoParams | kLSLaunchAsync)
 
@@ -1169,6 +1237,18 @@ void printInfoFromURL(CFURLRef url, void *context) {
     if (!(info.flags & kLSItemInfoIsContainer) || info.flags & kLSItemInfoIsPackage) {
 	printf("\ttype: '%s'", utf8StrFromOSType(info.filetype));
 	printf("\tcreator: '%s'\n", utf8StrFromOSType(info.creator));
+        if (info.creator == 'pdos') {
+            OSType byteSwappedType = CFSwapInt32BigToHost(info.filetype);
+            char typeStr[5]; // for simplicity, make a null-terminated string out of it
+            strlcpy(typeStr, (const char *)&byteSwappedType, 5);
+            if (typeStr[0] == 'p') {
+                printf("\tProDOS type: $%02X", (UInt8)typeStr[1]);
+                const char *prodosTypeDescription = PRODOS_TYPES[(UInt8)typeStr[1]];
+                if (prodosTypeDescription != NULL)
+                    printf(" (%s)", prodosTypeDescription);
+                printf("\taux type: $%02X%02X\n", (UInt8)typeStr[2], (UInt8)typeStr[3]);
+            }
+        }
     }
 
     CFStringRef bundleID = NULL;
