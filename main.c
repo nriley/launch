@@ -1001,7 +1001,7 @@ const char *utf8StrFromCFString(CFStringRef string) {
 }
 
 const char *utf8StrFromOSType(OSType osType) {
-    osType = ntohl(osType);
+    osType = CFSwapInt32BigToHost(osType);
     CFStringRef typeStr = CFStringCreateWithBytes(NULL, (UInt8 *)&osType, 4, CFStringGetSystemEncoding(), false);
     if (typeStr == NULL) {
 	// punt to displaying verbatim
