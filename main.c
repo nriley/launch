@@ -1054,6 +1054,12 @@ void printValence(CFURLRef url) {
     }
 }
 
+void printOSTypeWithoutNewline(OSType osType, char *label) {
+    osType = CFSwapInt32BigToHost(osType);
+    char *c = (char *)&osType;
+    printf("\t%s: '%c%c%c%c'", label, c[0], c[1], c[2], c[3]);
+}
+
 const char *utf8StrFromCFString(CFStringRef string) {
     static char tmpBuffer[STRBUF_LEN];
     if (CFStringGetCString(string, tmpBuffer, STRBUF_LEN, kCFStringEncodingUTF8))
@@ -1066,21 +1072,6 @@ const char *utf8StrFromCFString(CFStringRef string) {
     }
     str = mallocedUTF8StrFromCFString(string);
     return str;
-}
-
-const char *utf8StrFromOSType(OSType osType) {
-    osType = CFSwapInt32BigToHost(osType);
-    CFStringRef typeStr = CFStringCreateWithBytes(NULL, (UInt8 *)&osType, 4, CFStringGetSystemEncoding(), false);
-    if (typeStr == NULL) {
-	// punt to displaying verbatim
-	static char tmpBuffer[5];
-	tmpBuffer[4] = '\0';
-	strncpy(tmpBuffer, (const char *)&osType, 4);
-	return tmpBuffer;
-    }
-    const char *buffer = utf8StrFromCFString(typeStr);
-    CFRelease(typeStr);
-    return buffer;
 }
 
 // based on Apple's "CheckExecutableArchitecture" sample code
@@ -1235,18 +1226,21 @@ void printInfoFromURL(CFURLRef url, void *context) {
 
     printf("\n");
     if (!(info.flags & kLSItemInfoIsContainer) || info.flags & kLSItemInfoIsPackage) {
-	printf("\ttype: '%s'", utf8StrFromOSType(info.filetype));
-	printf("\tcreator: '%s'\n", utf8StrFromOSType(info.creator));
+        printOSTypeWithoutNewline(info.filetype, "type");
+        printOSTypeWithoutNewline(info.creator, "creator");
+        printf("\n");
         if (info.creator == 'pdos') {
             OSType byteSwappedType = CFSwapInt32BigToHost(info.filetype);
-            char typeStr[5]; // for simplicity, make a null-terminated string out of it
-            strlcpy(typeStr, (const char *)&byteSwappedType, 5);
+            UInt8 typeStr[5];
+            memcpy(typeStr, &byteSwappedType, 4);
             if (typeStr[0] == 'p') {
-                printf("\tProDOS type: $%02X", (UInt8)typeStr[1]);
-                const char *prodosTypeDescription = PRODOS_TYPES[(UInt8)typeStr[1]];
+                UInt8 prodosType = typeStr[1];
+                printf("\tProDOS type: $%02X", prodosType);
+                const char *prodosTypeDescription = PRODOS_TYPES[prodosType];
                 if (prodosTypeDescription != NULL)
                     printf(" (%s)", prodosTypeDescription);
-                printf("\taux type: $%02X%02X\n", (UInt8)typeStr[2], (UInt8)typeStr[3]);
+                UInt16 auxType = ((UInt16)typeStr[2] << 8) | typeStr[3];
+                printf("\taux type: $%04X\n", auxType);
             }
         }
     }
