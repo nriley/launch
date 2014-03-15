@@ -1241,6 +1241,26 @@ void printInfoFromURL(CFURLRef url, void *context) {
                     printf(" (%s)", prodosTypeDescription);
                 UInt16 auxType = ((UInt16)typeStr[2] << 8) | typeStr[3];
                 printf("\taux type: $%04X\n", auxType);
+                char *filename = strrchr(strBuffer, '/');
+                if (filename == NULL)
+                    filename = strBuffer;
+                else
+                    filename++;
+                // <http://www.1000bit.it/support/manuali/apple/technotes/ftyp/ftn.1a.xxxx.html>
+                if ((prodosType == 0x19 || prodosType == 0x1a || prodosType == 0x1b) &&
+                    strlen(filename) <= 15) { // AppleWorks type; valid ProDOS name length
+                    unsigned i;
+                    char *c;
+                    for (i = 0, c = filename; *c != '\0'; i++, c++) {
+                        if (!(auxType & (1 << ((~i & 7) | (i & ~7)))))
+                            continue;
+                        if (*c >= 'A' && *c <= 'Z') {
+                            *c += 32;
+                        } else if (*c == '.')
+                            *c = ' ';
+                    }
+                    printf("\tAppleWorks name: %s\n", filename);
+                }
             }
         }
     }
