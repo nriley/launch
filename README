@@ -1,4 +1,4 @@
-launch 1.2.1 [25 January 2014]
+launch 1.2.2 [15 March 2014]
 ============
 
 A command-line launcher for OS X in the spirit of open(1).
@@ -58,7 +58,7 @@ COMPILATION
 
 An Xcode project, 'launch.xcodeproj', is included.  A precompiled
 Universal binary is also provided.  'launch' was developed and tested
-under OS X 10.9.1 with Xcode 5.0.2, and should build on OS X 10.8 or
+under OS X 10.8.5 with Xcode 5.0.2, and should build on OS X 10.8 or
 later.
 
 USAGE
@@ -201,6 +201,12 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
+1.2.2 - 15 March 2014
+ - use non-deprecated API for marking files as stationery
+ - display type and creator codes containing null bytes
+ - display ProDOS types if encoded as HFS types
+ - display AppleWorks mixed-case filenames by decoding ProDOS
+   auxiliary types if present
 1.2.1 - 25 January 2014
  - better work around a bug in OS X 10.8 and 10.9, causing crashes
    using -f with a relative path to an item inside a package
@@ -240,7 +246,7 @@ VERSION HISTORY
  - -L: send "launch" (ascr/noop) event to app - bypasses automatic
    opening of untitled document, etc.
  - -o: pass command-line arguments (broken, r. 4474993)
- - display content type ID (UTI)    
+ - display content type ID (UTI)
  - display architecture of Mach-O files
  - switch to new LSOpen APIs (now requires Mac OS X 10.4 or later)
  - switch to new date formatting APIs (the old ones are deprecated)
