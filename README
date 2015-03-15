@@ -1,4 +1,4 @@
-launch 1.2.2 [15 March 2014]
+launch 1.2.3 [unreleased]
 ============
 
 A command-line launcher for OS X in the spirit of open(1).
@@ -201,6 +201,8 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
+1.2.3 - unreleased
+ - display display names for bundles
 1.2.2 - 15 March 2014
  - use non-deprecated API for marking files as stationery
  - display type and creator codes containing null bytes

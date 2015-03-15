@@ -1276,6 +1276,11 @@ void printInfoFromURL(CFURLRef url, void *context) {
 	( (bundle = CFBundleCreate(NULL, url)) != NULL)) {
 	bundleID = CFBundleGetIdentifier(bundle);
 	if (bundleID != NULL) CFRetain(bundleID);
+	CFStringRef name = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleDisplayName"));
+	if (name == NULL)
+	    name = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleName"));
+	if (name != NULL)
+	    printf("\tdisplay name: %s\n", utf8StrFromCFString(name));
 	// prefer a short version string, e.g. "1.0 Beta" instead of "51" for Safari
 	version = CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("CFBundleShortVersionString"));
 	if (version == NULL)
