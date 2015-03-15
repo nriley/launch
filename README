@@ -58,8 +58,7 @@ COMPILATION
 
 An Xcode project, 'launch.xcodeproj', is included.  A precompiled
 Universal binary is also provided.  'launch' was developed and tested
-under OS X 10.8.5 with Xcode 5.0.2, and should build on OS X 10.8 or
-later.
+under OS X 10.10.2 with Xcode 6.2.
 
 USAGE
 -----
