@@ -695,44 +695,18 @@ void printDateTime(const char *label, UTCDateTime *utcTime, const char *postStr,
     printAbsoluteTime(label, absoluteTime, postStr);
 }
 
-#define DFORMAT(SIZE) ((float)(SIZE) / 1024.)
-
-void printPhysicalSize(UInt64 physicalSize) {
-    if (physicalSize == 0) {
-        printf("zero bytes");
-        return;
+void printCount(UInt64 count) {
+    static NSNumberFormatter *formatter;
+    if (formatter == NULL) {
+	formatter = [[NSNumberFormatter alloc] init];
+	formatter.numberStyle = NSNumberFormatterNoStyle;
+	formatter.usesGroupingSeparator = YES;
     }
-    UInt32 bigSize = physicalSize >> 32, littleSize = physicalSize;
-    if (bigSize == 0) {
-        if (littleSize < 1024)
-            printf("%u bytes", (unsigned int)littleSize);
-        else {
-            UInt32 adjSize = littleSize >> 10;
-            if (adjSize < 1024) printf("%.1f KB", DFORMAT(littleSize));
-            else {
-                adjSize >>= 10; littleSize >>= 10;
-                if (adjSize < 1024) printf("%.2f MB", DFORMAT(littleSize));
-                else {
-                    /* adjSize >>= 10; */ littleSize >>= 10;
-                    printf("%.2f GB", DFORMAT(littleSize));
-                }
-            }
-        }
-    } else {
-        if (bigSize < 1024) { // < 4 TB
-            printf("%.2f GB", (float)(bigSize * 4 + littleSize / 1073741824.));
-        } else {
-            bigSize >>= 8;
-            printf("%u TB", (unsigned int)bigSize);
-        }
-    }
+    printf("%s", [[formatter stringFromNumber:[NSNumber numberWithUnsignedLongLong:count]] UTF8String]);
 }
 
 void printSize(SInt64 size) {
-    if (size < 0)
-        printf("%lld bytes", size);
-    else
-        printPhysicalSize((UInt64)size);
+    printf("%s", [[NSByteCountFormatter stringFromByteCount:size countStyle:NSByteCountFormatterCountStyleFile] UTF8String]);
 }
 
 Boolean booleanProp(CFDictionaryRef props, CFStringRef key, Boolean *boolean) {
@@ -906,7 +880,9 @@ Boolean printSizesProp(CFDictionaryRef props, CFStringRef logicalSizeKey, CFStri
             printf("zero bytes on disk (zero bytes used)\n");
         } else {
             printSize(physicalSize);
-            printf(" on disk (%llu bytes used)\n", logicalSize);
+	    printf(" on disk (");
+	    printCount(logicalSize);
+	    printf(" bytes used)\n");
         }
     } else {
         printSize(logicalSize || physicalSize);
@@ -968,8 +944,11 @@ void printMoreInfoForVolume(CFURLRef url) {
 
     printStringProp(props, kCFURLVolumeLocalizedFormatDescriptionKey, "filesystem", NULL, NULL);
     SInt64 resourceCount;
-    if (sInt64Prop(props, kCFURLVolumeResourceCountKey, &resourceCount))
-        printf("\tfiles and folders: %lld\n", resourceCount);
+    if (sInt64Prop(props, kCFURLVolumeResourceCountKey, &resourceCount)) {
+	printf("\tfiles and folders: ");
+	printCount(resourceCount);
+	printf("\n");
+    }
 
     Boolean supportsVolumeSizes;
     if (booleanProp(props, kCFURLVolumeSupportsVolumeSizesKey, &supportsVolumeSizes) && supportsVolumeSizes) {
@@ -1051,7 +1030,9 @@ void printValence(CFURLRef url) {
     switch (count) {
 	case 0: printf("zero items\n"); break;
 	case 1: printf("1 item\n"); break;
-	default: printf("%lld items\n", count);
+	default:
+	    printCount(count);
+	    printf(" items\n");
     }
 }
 
