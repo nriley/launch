@@ -192,7 +192,7 @@ void __attribute__((__noreturn__)) usage() {
         "A document may be a file, folder, or disk - whatever the application can open.\n"
         "An item may be a file, folder, disk, or URL.\n\n");
     const char *version = utf8StrFromCFString(CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(), CFSTR("CFBundleShortVersionString")));
-    fprintf(stderr, "launch %s (c) 2001-14 Nicholas Riley <http://sabi.net/nriley/software/>.\n"
+    fprintf(stderr, "launch %s (c) 2001-15 Nicholas Riley <http://sabi.net/nriley/software/>.\n"
             "Please send bugs, suggestions, etc. to <launchsw@sabi.net>.\n", version);
 
     exit(1);
