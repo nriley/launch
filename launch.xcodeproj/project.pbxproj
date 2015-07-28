@@ -160,7 +160,7 @@
 					__info_plist,
 					"$(INFOPLIST_FILE)",
 				);
-				SDKROOT = macosx10.10;
+				SDKROOT = macosx;
 				STRIP_INSTALLED_PRODUCT = NO;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -180,7 +180,7 @@
 					__info_plist,
 					"$(INFOPLIST_FILE)",
 				);
-				SDKROOT = macosx10.10;
+				SDKROOT = macosx;
 				STRIP_INSTALLED_PRODUCT = NO;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
