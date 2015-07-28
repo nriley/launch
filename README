@@ -200,12 +200,12 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
-1.2.3 - unreleased
+1.2.3 - 28 July 2015
  - display display names for bundles
  - display localized file sizes which match Mac OS X 10.6 and later
    (base 10) also now uses EB for larger-than-TB units
  - display localized numbers (with grouping separators if applicable)
- - 64-bit Intel binary, built for OS X and later (tested on 10.8.5,
+ - 64-bit Intel binary, built for OS X 10.8 and later (tested on 10.8.5,
    10.9.5 and 10.10.4)
 1.2.2 - 15 March 2014
  - use non-deprecated API for marking files as stationery
