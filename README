@@ -57,8 +57,8 @@ COMPILATION
 -----------
 
 An Xcode project, 'launch.xcodeproj', is included.  A precompiled
-Universal binary is also provided.  'launch' was developed and tested
-under OS X 10.10.2 with Xcode 6.2.
+binary is also provided.  'launch' was developed and tested under OS X
+10.10.4 with Xcode 6.2.
 
 USAGE
 -----
@@ -88,7 +88,7 @@ Some examples:
 	type: 'APPL'	creator: 'prvw'
 	architecture: Intel x86-64
 	bundle ID: com.apple.Preview
-	version: 7.0
+	version: 8.0
 	kind: Application
 	attributes: extension hidden
 	content type ID: com.apple.application-bundle
