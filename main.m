@@ -699,8 +699,7 @@ void printCount(UInt64 count) {
     static NSNumberFormatter *formatter;
     if (formatter == NULL) {
 	formatter = [[NSNumberFormatter alloc] init];
-	formatter.numberStyle = NSNumberFormatterNoStyle;
-	formatter.usesGroupingSeparator = YES;
+	formatter.numberStyle = NSNumberFormatterDecimalStyle;
     }
     printf("%s", [[formatter stringFromNumber:[NSNumber numberWithUnsignedLongLong:count]] UTF8String]);
 }
