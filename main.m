@@ -2,7 +2,7 @@
  launch - a smarter 'open' replacement
  Nicholas Riley <launchsw@sabi.net>
 
- Copyright (c) 2001-14, Nicholas Riley
+ Copyright (c) 2001-15, Nicholas Riley
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -26,6 +26,7 @@
 #include <mach-o/arch.h>
 #include <mach-o/loader.h>
 #include <Carbon/Carbon.h>
+#import <Foundation/Foundation.h>
 
 #ifndef BROKEN_AUTHORIZATION
 #include <Security/Authorization.h>
