@@ -660,9 +660,10 @@ Boolean stringFromURLIsRemote(CFURLRef url, char *strBuffer) {
 
 void printPathFromURL(CFURLRef url, FILE *stream) {
     static char strBuffer[STRBUF_LEN];
-    check(url != NULL && stream != NULL);
-    stringFromURLIsRemote(url, strBuffer);
-    fprintf(stream, "%s\n", strBuffer);
+    if (url != NULL && stream != NULL) {
+    	stringFromURLIsRemote(url, strBuffer);
+    	fprintf(stream, "%s\n", strBuffer);
+    }
 }
 
 void printAbsoluteTime(const char *label, CFAbsoluteTime absoluteTime, const char *postStr) {
@@ -1090,8 +1091,8 @@ void printExecutableArchitectures(CFURLRef url, bool printOnFailure) {
     }
 
     // Look for any of the six magic numbers relevant to Mach-O executables, and swap the header if necessary.
-    uint32_t num_fat = 0, magic = *((uint32_t *)bytes);
-    uint32_t max_fat = (length - sizeof(struct fat_header)) / sizeof(struct fat_arch);
+    long num_fat = 0, magic = *((uint32_t *)bytes);
+    long max_fat = (length - sizeof(struct fat_header)) / sizeof(struct fat_arch);
     struct fat_arch one_fat = {0}, *fat;
     if (MH_MAGIC == magic || MH_CIGAM == magic) {
         struct mach_header *mh = (struct mach_header *)bytes;
@@ -1139,7 +1140,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
     CFStringRef kind;
     static char strBuffer[STRBUF_LEN];
 
-    check(url != NULL && context == NULL);
+    if (url == NULL || context != NULL) return;
 
     if (stringFromURLIsRemote(url, strBuffer)) {
         printf("<%s>: URL\n", strBuffer);
