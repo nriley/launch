@@ -146,7 +146,7 @@ static errList ERRS = {
     { kLSUnknownTypeErr, "cannot determine item kind" },
     { kLSLaunchInProgressErr, "application is being opened; please try again after the application is open" },
     { kLSServerCommunicationErr, "unable to connect to Launch Services.\nAre you logged in?" },
-    { kLSIncompatibleSystemVersionErr, "application is incompatible with this version of OS X" },
+    { kLSIncompatibleSystemVersionErr, "application is incompatible with this version of macOS" },
     { kLSNoLaunchPermissionErr, "no permission to launch this application", },
     { kLSNoExecutableErr, "application package contains no executable, or an unusable executable" },
     { kLSNoClassicEnvironmentErr, "Classic environment required but not available" },
@@ -1182,7 +1182,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
     // modifiers
     if (info.flags & kLSItemInfoIsInvisible) printf("invisible ");
     if (info.flags & kLSItemInfoAppIsScriptable) printf("scriptable ");
-    if (info.flags & kLSItemInfoIsNativeApp) printf("OS X ");
+    if (info.flags & kLSItemInfoIsNativeApp) printf("macOS ");
     if (info.flags & kLSItemInfoIsClassicApp) printf("Classic ");
 
     // kind
@@ -1202,7 +1202,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
 
     if (info.flags & kLSItemInfoIsPackage) printf("package ");
 
-    if (info.flags & kLSItemInfoAppPrefersNative) printf("[Carbon, prefers native OS X]");
+    if (info.flags & kLSItemInfoAppPrefersNative) printf("[Carbon, prefers native macOS]");
     else if (info.flags & kLSItemInfoAppPrefersClassic) printf("[Carbon, prefers Classic]");
 
     printf("\n");

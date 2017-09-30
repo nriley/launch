@@ -10,7 +10,7 @@ WHAT IS IT?
 -----------
 
 Apple provides a simple command-line launching program called 'open'
-with OS X.  'launch' offers several options that 'open' doesn't.  It:
+with macOS.  'launch' offers several options that 'open' doesn't.  It:
 
 - opens "slack" URLs (e.g. apple.com) and email addresses (-l)
 - lets you specify applications by their four-character creator
