@@ -660,7 +660,7 @@ Boolean stringFromURLIsRemote(CFURLRef url, char *strBuffer) {
 
 void printPathFromURL(CFURLRef url, FILE *stream) {
     static char strBuffer[STRBUF_LEN];
-    check(url != NULL && stream != NULL);
+    __Check(url != NULL && stream != NULL);
     stringFromURLIsRemote(url, strBuffer);
     fprintf(stream, "%s\n", strBuffer);
 }
@@ -1139,7 +1139,7 @@ void printInfoFromURL(CFURLRef url, void *context) {
     CFStringRef kind;
     static char strBuffer[STRBUF_LEN];
 
-    check(url != NULL && context == NULL);
+    __Check(url != NULL && context == NULL);
 
     if (stringFromURLIsRemote(url, strBuffer)) {
         printf("<%s>: URL\n", strBuffer);
