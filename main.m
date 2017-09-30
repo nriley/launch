@@ -2,7 +2,7 @@
  launch - a smarter 'open' replacement
  Nicholas Riley <launchsw@sabi.net>
 
- Copyright (c) 2001-15, Nicholas Riley
+ Copyright (c) 2001-17, Nicholas Riley
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
