@@ -1,7 +1,7 @@
 launch 1.2.3 [28 July 2015]
 ============
 
-A command-line launcher for OS X in the spirit of open(1).
+A command-line launcher for macOS in the spirit of open(1).
 
 Written by Nicholas Riley <mailto:launchsw@sabi.net>.
 Obtain updates from <https://sabi.net/nriley/software/>.
@@ -26,7 +26,7 @@ with macOS.  'launch' offers several options that 'open' doesn't.  It:
 - and much more!
 
 'launch' is useful by itself, but is even better when used in scripts.
-Assign a shell command to your favorite OS X text or graphics editor.
+Assign a shell command to your favorite macOS text or graphics editor.
 Go to your favorite Web site with a few keystrokes.
 
 Like 'open', 'launch' provides one half of the round-trip between
@@ -40,8 +40,8 @@ INSTALLATION
 
 The commands below install the 'launch' tool in /usr/local/bin, which
 is in the default path.  You should subsequently be able to use
-'launch' by typing its name.  If you wish to install it somewhere else,
-modify the install line as appropriate.
+'launch' by typing its name.  If you wish to install it somewhere
+else, modify the install lines as appropriate.
 
 % sudo /usr/bin/install -d -m 755 /usr/local /usr/local/bin
 % sudo /usr/bin/install -d -m 755 /usr/local/share /usr/local/share/man
@@ -53,14 +53,14 @@ modify the install line as appropriate.
 
 Uninstallation:
 
-% sudo rm -f /usr/local/bin/launch /usr/local/man/man1/launch.1
+% sudo rm -f /usr/local/bin/launch /usr/local/share/man/man1/launch.1
 
 COMPILATION
 -----------
 
 An Xcode project, 'launch.xcodeproj', is included.  A precompiled
-binary is also provided.  'launch' was developed and tested under OS X
-10.10.4 with Xcode 6.2.
+binary is also provided.  'launch' was developed and tested under macOS
+10.12.6 and 10.13 with Xcode 9.0.
 
 USAGE
 -----
@@ -86,18 +86,18 @@ Some examples:
 [Your preferred email client opens a new message to comment on launch]
 
 % launch -f /Applications/Preview.app
-/Applications/Preview.app: scriptable OS X application package 
+/Applications/Preview.app: scriptable macOS application package
 	type: 'APPL'	creator: 'prvw'
 	architecture: Intel x86-64
 	bundle ID: com.apple.Preview
-	version: 8.0
+	version: 10.0
 	kind: Application
 	attributes: extension hidden
 	content type ID: com.apple.application-bundle
 	contents: 1 item
 [...]
 
-A scripting example: a zsh function which provides an OS X wrapper
+A scripting example: a zsh function which provides an macOS wrapper
 around emacsclient and the Mac port of GNU Emacs, using launch and
 appswitch (another one of my command-line tools).
 
@@ -120,7 +120,7 @@ A. The -f option to launch can help.  Say you have Messages in your
 'launch -f', and drop the Messages icon on the Terminal window:
 
 % launch -f /Applications/Messages.app
-/Applications/Messages.app: scriptable OS X application package
+/Applications/Messages.app: scriptable macOS application package
 	type: 'APPL'	creator: 'fez!'
 	architecture: Intel x86-64
 	bundle ID: com.apple.iChat
@@ -166,7 +166,7 @@ Are you logged in? (-600)
 
 In order to perform certain operations, launch needs to talk to
 various system services owned by the currently logged-on user.  If you
-aren't using 'launch' from a terminal currently logged into the OS X GUI,
+aren't using 'launch' from a terminal currently logged into the macOS GUI,
 certain operations may not work.  Try opening Terminal, creating
 a new terminal window, and trying again.
 
