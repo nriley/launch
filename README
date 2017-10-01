@@ -1,4 +1,4 @@
-launch 1.2.3 [28 July 2015]
+launch 1.2.4 [1 October 2017]
 ============
 
 A command-line launcher for macOS in the spirit of open(1).
@@ -202,6 +202,12 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
+1.2.4 - 1 October 2017
+ - code changes (no functionality changes) to compile with the macOS
+   10.13 SDK
+ - install man pages in /usr/local/share/man instead of /usr/local/man
+ - 64-bit Intel binary, built for macOS/OS X 10.8 and later (tested on
+   10.8.5, 10.9.5, 10.10.5, 10.11.6, 10.12.6 and 10.13)
 1.2.3 - 28 July 2015
  - display display names for bundles
  - display localized file sizes which match Mac OS X 10.6 and later
