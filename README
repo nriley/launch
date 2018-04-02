@@ -1,4 +1,4 @@
-launch 1.2.4 [1 October 2017]
+launch 1.2.5 [2 April 2018]
 ============
 
 A command-line launcher for macOS in the spirit of open(1).
@@ -60,7 +60,7 @@ COMPILATION
 
 An Xcode project, 'launch.xcodeproj', is included.  A precompiled
 binary is also provided.  'launch' was developed and tested under macOS
-10.12.6 and 10.13 with Xcode 9.0.
+10.13.4 with Xcode 9.3.
 
 USAGE
 -----
@@ -203,6 +203,9 @@ Please send to the author, Nicholas Riley, at <launchsw@sabi.net>.
 VERSION HISTORY
 ---------------
 
+1.2.5 - 2 April 2018
+ - no longer unnecessarily restrict -s, -b, -m, -h with -l (should
+   have been done with changes in 1.2)
 1.2.4 - 1 October 2017
  - code changes (no functionality changes) to compile with the macOS
    10.13 SDK
