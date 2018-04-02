@@ -79,7 +79,7 @@ Some examples:
 % ls -l | launch -c '!Rch' -
 [TextWrangler opens with an untitled document containing the file list]
 
-% launch -i org.mozilla.firefox http://www.apple.com/
+% launch -i org.mozilla.firefox https://www.apple.com/
 [Firefox opens Apple's Web site]
 
 % launch -l launchsw@sabi.net
