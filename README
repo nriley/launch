@@ -140,8 +140,7 @@ stationery pad in an application which supports it, the application
 creates a new untitled document with the contents of the stationery.
 Most Cocoa applications, such as TextEdit, do not support stationery.
 (Omni Group applications are a notable exception.)  If you're looking
-for a text editor which supports stationery, try BBEdit or
-TextWrangler.
+for a text editor which supports stationery, try BBEdit.
 
 For the curious: launch processes input by simultaneously reading it
 and writing to a temporary stationery pad file.  Once reading is
