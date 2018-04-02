@@ -2,7 +2,7 @@
  launch - a smarter 'open' replacement
  Nicholas Riley <launchsw@sabi.net>
 
- Copyright (c) 2001-17, Nicholas Riley
+ Copyright (c) 2001-18, Nicholas Riley
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -179,7 +179,7 @@ void __attribute__((__noreturn__)) usage() {
         "  -s            launch target(s) as superuser (authenticating if needed)\n"
 #endif
         "  -w            wait for application to finish opening before exiting\n"
-        "  -b            launch application in the background\n"
+        "  -b            launch application/URL in the background\n"
         "  -m            launch application again, even if already running\n"
         "  -h            hide application once it's finished opening\n"
 	"  -L            suppress normal opening behavior (e.g. untitled window)\n"
@@ -192,7 +192,7 @@ void __attribute__((__noreturn__)) usage() {
         "A document may be a file, folder, or disk - whatever the application can open.\n"
         "An item may be a file, folder, disk, or URL.\n\n");
     const char *version = utf8StrFromCFString(CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(), CFSTR("CFBundleShortVersionString")));
-    fprintf(stderr, "launch %s (c) 2001-17 Nicholas Riley <https://sabi.net/nriley/software/>.\n"
+    fprintf(stderr, "launch %s (c) 2001-18 Nicholas Riley <https://sabi.net/nriley/software/>.\n"
             "Please send bugs, suggestions, etc. to <launchsw@sabi.net>.\n", version);
 
     exit(1);
@@ -554,11 +554,8 @@ void getargs(int argc, char * const argv[]) {
 
     argc -= optind;
     argv += optind;
-
-    if ( (OPTS.action == ACTION_FIND || OPTS.action == ACTION_LAUNCH_URLS ||
-	  OPTS.action == ACTION_INFO) && LPARAMS.flags != DEFAULT_LAUNCH_FLAGS)
-        errexit("options -s, -b, -m, -h apply to application launch (not -n, -f or -l)");
-
+    if ( (OPTS.action == ACTION_FIND || OPTS.action == ACTION_INFO) && LPARAMS.flags != DEFAULT_LAUNCH_FLAGS)
+        errexit("options -s, -b, -m, -h apply to application/URL launch (not -n or -f)");
     if (OPTS.creator == kLSUnknownCreator && OPTS.bundleID == NULL && OPTS.name == NULL) {
 	if (argc == 0 && LPARAMS.application == NULL)
 	    errexit("without items, must specify an application by -u, or one or more of -c, -i, -a");
