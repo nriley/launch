@@ -88,6 +88,7 @@ Some examples:
 % launch -f /Applications/Preview.app
 /Applications/Preview.app: scriptable macOS application package
 	type: 'APPL'	creator: 'prvw'
+	display name: Preview
 	architecture: Intel x86-64
 	bundle ID: com.apple.Preview
 	version: 10.0
@@ -122,6 +123,7 @@ A. The -f option to launch can help.  Say you have Messages in your
 % launch -f /Applications/Messages.app
 /Applications/Messages.app: scriptable macOS application package
 	type: 'APPL'	creator: 'fez!'
+	display name: Messages
 	architecture: Intel x86-64
 	bundle ID: com.apple.iChat
 [...]
