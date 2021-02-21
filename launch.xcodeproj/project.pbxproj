@@ -21,6 +21,7 @@
 		E164F69018CD197A0028D1BB /* launch.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = launch.1; sourceTree = "<group>"; };
 		E18116CE1B67EED400592741 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		E194197009C40AFB00266191 /* launch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = launch; sourceTree = BUILT_PRODUCTS_DIR; };
+		E1C712E925E2D9C0006B86C3 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		F5C0CA9501B5740C01AEEDB1 /* README */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -79,6 +80,7 @@
 		72CD182E18779F3E00F4ACCE /* Documentation */ = {
 			isa = PBXGroup;
 			children = (
+				E1C712E925E2D9C0006B86C3 /* LICENSE */,
 				F5C0CA9501B5740C01AEEDB1 /* README */,
 				E164F69018CD197A0028D1BB /* launch.1 */,
 			);
