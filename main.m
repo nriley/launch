@@ -167,7 +167,7 @@ static errList ERRS = {
 
 const char *utf8StrFromCFString(CFStringRef string);
 
-void __attribute__((__noreturn__)) usage() {
+void __attribute__((__noreturn__)) usage(void) {
     fprintf(stderr, "usage: %s [-npflswbmhLU] [-c creator] [-i bundleID] [-u URL] [-a name|path] [-o argument] [item ...] [-]\n",
             APP_NAME);
     fprintf(stderr,
@@ -414,7 +414,7 @@ char *tempFile(int *fd) {
     return tempPath;
 }
 
-char *stdinAsTempFile() {
+char *stdinAsTempFile(void) {
     unsigned char *buf;
     int bufsize;
     // Actual number of characters read, and therefore written.
@@ -1423,7 +1423,7 @@ OSStatus openItems(void) {
     return LSOpenURLsWithRole(ITEMS, kLSRolesAll, NULL, &LPARAMS, NULL, 0);
 }
 
-void background() {
+void background(void) {
     if (fork() > 1)
         exit(0);
 
